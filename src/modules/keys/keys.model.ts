@@ -3,13 +3,14 @@ import type { ObjectId } from 'mongoose';
 
 export interface ApiKey {
   _id: ObjectId;
-  userId: string; // ID do Better Auth
+  userId: string; // Better Auth ID
   key: string; // "sk_live_abc123..."
   name: string; // "Production", "Development"
   status: 'active' | 'revoked';
+  revokedAt?: Date;
   createdAt: Date;
   lastUsedAt?: Date;
-  expiresAt?: Date; // null = never
+  organizationId?: string; // null = personal key
 }
 
 const apiKeySchema = new Schema<ApiKey>({
@@ -17,13 +18,14 @@ const apiKeySchema = new Schema<ApiKey>({
   key: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   status: { type: String, enum: ['active', 'revoked'], default: 'active' },
+  revokedAt: Date,
   createdAt: { type: Date, default: Date.now },
   lastUsedAt: Date,
-  expiresAt: Date,
+  organizationId: String,
 });
 
-// Indexes
 apiKeySchema.index({ key: 1 }, { unique: true });
 apiKeySchema.index({ userId: 1 });
+apiKeySchema.index({ organizationId: 1 });
 
 export const ApiKeyModel: Model<ApiKey> = model<ApiKey>('ApiKey', apiKeySchema);

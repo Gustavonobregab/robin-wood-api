@@ -5,6 +5,8 @@ import { keysRoutes } from './modules/keys/keys.routes';
 import { usageRoutes } from './modules/usage/usage.routes';
 import { billingRoutes } from './modules/billing/billing.routes';
 import { subscriptionsRoutes } from './modules/subscriptions/subscriptions.routes';
+import { organizationsRoutes } from './modules/organizations/organizations.routes';
+import { webhooksRoutes } from './modules/webhooks/webhooks.routes';
 
 const app = new Elysia()
   .get('/', () => ({ message: 'Robin Wood API' }))
@@ -12,7 +14,9 @@ const app = new Elysia()
   .use(keysRoutes)
   .use(usageRoutes)
   .use(billingRoutes)
-  .use(subscriptionsRoutes);
+  .use(subscriptionsRoutes)
+  .use(organizationsRoutes)
+  .use(webhooksRoutes);
 
 async function start() {
   try {
