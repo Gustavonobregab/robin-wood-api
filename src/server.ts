@@ -9,7 +9,7 @@ import { organizationsRoutes } from './modules/organizations/organizations.route
 import { webhooksRoutes } from './modules/webhooks/webhooks.routes';
 
 const app = new Elysia()
-  .get('/', () => ({ message: 'Robin Wood API' }))
+  .get('/', () => ({ data: { message: 'Robin Wood API' } }))
   .use(authRoutes)
   .use(keysRoutes)
   .use(usageRoutes)
