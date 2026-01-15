@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "bun run src/server.ts",
-    "start": "bun run src/server.ts"
+    "start": "bun run src/server.ts",
+    "seed": "bun run src/scripts/seed-api-keys.ts"
   },
   "dependencies": {
     "@elysiajs/swagger": "^1.1.1",

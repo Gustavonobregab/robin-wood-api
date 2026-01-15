@@ -14,8 +14,8 @@ export interface ApiKey {
 }
 
 const apiKeySchema = new Schema<ApiKey>({
-  userId: { type: String, required: true, index: true },
-  key: { type: String, required: true, unique: true },
+  userId: { type: String, required: true },
+  key: { type: String, required: true },
   name: { type: String, required: true },
   status: { type: String, enum: ['active', 'revoked'], default: 'active' },
   revokedAt: Date,
