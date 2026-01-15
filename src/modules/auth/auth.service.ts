@@ -1,16 +1,16 @@
 import { ApiKeyModel } from '../keys/keys.model';
+import { ApiError } from '../../lib/api-error';
 
 export const authService = {
   async validateApiKey(key: string) {
-    
     if (!key) {
-      return { valid: false, error: 'API key is required' };
+      throw new ApiError('API_KEY_REQUIRED', 'API key is required', 401);
     }
 
     const keyRecord = await ApiKeyModel.findOne({ key, status: 'active' });
 
     if (!keyRecord) {
-      return { valid: false, error: 'Invalid or revoked API key' };
+      throw new ApiError('INVALID_API_KEY', 'Invalid or revoked API key', 401);
     }
 
     await ApiKeyModel.updateOne({ _id: keyRecord._id }, { lastUsedAt: new Date() });

@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(tree:*)",
-      "Bash(bun run seed:*)"
+      "Bash(bun run seed:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:elysiajs.com)",
+      "WebSearch",
+      "WebFetch(domain:www.adarsha.dev)"
     ]
   }
 }

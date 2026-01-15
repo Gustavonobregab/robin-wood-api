@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
 import { connectDatabase } from './config/database';
+import { apiErrorPlugin } from './lib/api-error';
 import { authRoutes } from './modules/auth/auth.routes';
 import { keysRoutes } from './modules/keys/keys.routes';
 import { usageRoutes } from './modules/usage/usage.routes';
@@ -9,7 +10,8 @@ import { organizationsRoutes } from './modules/organizations/organizations.route
 import { webhooksRoutes } from './modules/webhooks/webhooks.routes';
 
 const app = new Elysia()
-  .get('/', () => ({ data: { message: 'Robin Wood API' } }))
+  .use(apiErrorPlugin)
+  .get('/', () => ({ message: 'Robin Wood API' }))
   .use(authRoutes)
   .use(keysRoutes)
   .use(usageRoutes)
