@@ -1,8 +1,8 @@
 import { Elysia } from 'elysia';
 import { ApiKeyModel } from '../modules/keys/keys.model';
 
-export const validateApiKey = new Elysia()
-  .derive(async ({ headers, set }) => {
+export const validateApiKey = new Elysia({ name: 'validate-api-key' })
+  .derive({ as: 'scoped' }, async ({ headers, set }) => {
     const apiKey = headers['x-api-key'] || headers['authorization']?.replace('Bearer ', '');
 
     if (!apiKey) {
@@ -22,6 +22,5 @@ export const validateApiKey = new Elysia()
     return {
       apiKey,
       userId: keyRecord.userId,
-      organizationId: keyRecord.organizationId
     };
   });

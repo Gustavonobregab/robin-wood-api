@@ -18,7 +18,6 @@ export interface UsageEvent {
   billableBytes: number; // bytesSaved if > free tier
   costUsd: number; // Calculated based on price per GB of pipeline
   billedInPeriod: string; // "2026-01" (year-month)
-  organizationId?: string;
 }
 
 export interface PipelineMonthlyStats {
@@ -47,7 +46,64 @@ export interface UsageMonthly {
   invoiced: boolean; // If invoice was already generated
   invoiceId?: ObjectId; // Reference to Invoice
   updatedAt: Date;
-  organizationId?: string;
+}
+
+// Service input/output types
+export type PipelineType = 'audio' | 'image' | 'text' | 'video';
+
+export interface UsageEventInput {
+  pipelineType: PipelineType;
+  operations: string[];
+  inputSizeBytes: number;
+  outputSizeBytes: number;
+  bytesSaved: number;
+  compressionRatio: number;
+  durationMs: number;
+  timestamp?: string;
+  clientVersion?: string;
+  environment?: string;
+}
+
+export interface RecordBatchResult {
+  recorded: number;
+  period: string;
+  freeTierRemaining: number;
+  billable: boolean;
+}
+
+export interface CurrentUsageResult {
+  period: string;
+  totalOperations: number;
+  totalBytesSaved: number;
+  totalCostUsd: number;
+  pipelines: {
+    audio: PipelineMonthlyStats;
+    image: PipelineMonthlyStats;
+    text: PipelineMonthlyStats;
+    video: PipelineMonthlyStats;
+  };
+  freeTier: {
+    operationsUsed: number;
+    operationsLimit: number;
+    operationsRemaining: number;
+    percentUsed: number;
+  };
+  billable: boolean;
+}
+
+export interface UsageLimitsResult {
+  plan: string;
+  freeTier: {
+    operationsLimit: number;
+    operationsUsed: number;
+    operationsRemaining: number;
+  };
+  planLimits: {
+    operationsLimit: number;
+    operationsUsed: number;
+    operationsRemaining: number | 'unlimited';
+  };
+  pricing: Record<string, { pricePerGbSaved: number }>;
 }
 
 const usageEventSchema = new Schema<UsageEvent>({
@@ -66,7 +122,6 @@ const usageEventSchema = new Schema<UsageEvent>({
   billableBytes: { type: Number, default: 0 },
   costUsd: { type: Number, default: 0 },
   billedInPeriod: { type: String, required: true, index: true },
-  organizationId: String,
 });
 
 const pipelineMonthlyStatsSchema = new Schema<PipelineMonthlyStats>({
@@ -94,17 +149,14 @@ const usageMonthlySchema = new Schema<UsageMonthly>({
   invoiced: { type: Boolean, default: false, index: true },
   invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' },
   updatedAt: { type: Date, default: Date.now },
-  organizationId: String,
 });
 
 usageEventSchema.index({ userId: 1, timestamp: -1 });
 usageEventSchema.index({ userId: 1, billedInPeriod: 1 });
-usageEventSchema.index({ organizationId: 1, billedInPeriod: 1 });
 usageEventSchema.index({ timestamp: 1 });
 usageEventSchema.index({ apiKeyId: 1, timestamp: -1 });
 usageMonthlySchema.index({ userId: 1, year: 1, month: 1 }, { unique: true });
-usageMonthlySchema.index({ period: 1, invoiced: 1 }); 
-usageMonthlySchema.index({ organizationId: 1, year: 1, month: 1 });
+usageMonthlySchema.index({ period: 1, invoiced: 1 });
 
 export const UsageEventModel: Model<UsageEvent> = model<UsageEvent>('UsageEvent', usageEventSchema);
 export const UsageMonthlyModel: Model<UsageMonthly> = model<UsageMonthly>('UsageMonthly', usageMonthlySchema);

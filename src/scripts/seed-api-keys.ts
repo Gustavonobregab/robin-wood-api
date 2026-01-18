@@ -19,7 +19,6 @@ const MOCK_API_KEYS = [
     key: 'sk_live_robin_dev_key_001',
     name: 'Development Key',
     status: 'active' as const,
-    organizationId: 'org_test_001',
   },
 ];
 

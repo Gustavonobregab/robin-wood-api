@@ -1,23 +1,25 @@
 import { Schema, model, Model } from 'mongoose';
 import type { ObjectId } from 'mongoose';
+
 export interface Pricing {
   _id: ObjectId;
   pipelineType: 'audio' | 'image' | 'text' | 'video';
-  pricePerGbSaved: number; // e.g., 10.00
-  freeTierOperations: number; // e.g., 1000 free operations
+  pricePerGbSaved: number;
+  freeTierOperations: number;
   freeTierGbSaved?: number;
   currency: 'USD';
   active: boolean;
-  effectiveFrom: Date; // Price versioning control
-  effectiveUntil?: Date; // null = current
+  effectiveFrom: Date;
+  effectiveUntil?: Date;
   createdAt: Date;
 }
+
 export interface InvoiceLineItem {
   pipelineType: string;
-  description: string; // "Audio processing - 150GB saved"
-  quantity: number; // GB saved
-  unitPrice: number; // Price per GB
-  amount: number; // quantity * unitPrice
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
 }
 
 export interface Invoice {
@@ -25,11 +27,11 @@ export interface Invoice {
   userId: string;
   year: number;
   month: number;
-  period: string; // "2026-01"
+  period: string;
   subtotalUsd: number;
-  taxUsd: number; // Currently 0
+  taxUsd: number;
   totalUsd: number;
-  lineItems: InvoiceLineItem[]; // Breakdown by pipeline
+  lineItems: InvoiceLineItem[];
   status: 'draft' | 'issued' | 'paid' | 'failed' | 'void';
   paymentMethod?: 'stripe' | 'manual';
   stripeInvoiceId?: string;
@@ -37,12 +39,11 @@ export interface Invoice {
   issuedAt: Date;
   dueAt: Date;
   createdAt: Date;
-  organizationId?: string;
 }
 
 export interface UserBillingInfo {
   _id: ObjectId;
-  userId: string; // Better Auth ID (unique)
+  userId: string;
   stripeCustomerId?: string;
   paymentMethod?: {
     type: 'card';
@@ -60,12 +61,12 @@ export interface UserBillingInfo {
     city: string;
     state?: string;
     postalCode: string;
-    country: string; // ISO code
+    country: string;
   };
   currentPeriod: {
     year: number;
     month: number;
-    totalCostUsd: number; // Running total for current month
+    totalCostUsd: number;
     lastCalculatedAt: Date;
   };
   paymentStatus: 'active' | 'past_due' | 'suspended';
@@ -73,7 +74,6 @@ export interface UserBillingInfo {
   suspensionReason?: string;
   createdAt: Date;
   updatedAt: Date;
-  organizationId?: string;
 }
 
 const pricingSchema = new Schema<Pricing>({
@@ -112,7 +112,6 @@ const invoiceSchema = new Schema<Invoice>({
   issuedAt: { type: Date, default: Date.now },
   dueAt: { type: Date, required: true, index: true },
   createdAt: { type: Date, default: Date.now },
-  organizationId: String,
 });
 
 const userBillingInfoSchema = new Schema<UserBillingInfo>({
@@ -147,19 +146,14 @@ const userBillingInfoSchema = new Schema<UserBillingInfo>({
   suspensionReason: String,
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
-  organizationId: String,
 });
 
 pricingSchema.index({ pipelineType: 1, active: 1, effectiveFrom: -1 });
-
 invoiceSchema.index({ userId: 1, period: 1 }, { unique: true });
 invoiceSchema.index({ status: 1, dueAt: 1 });
-invoiceSchema.index({ organizationId: 1, period: 1 });
-
 userBillingInfoSchema.index({ userId: 1 }, { unique: true });
 userBillingInfoSchema.index({ stripeCustomerId: 1 });
 userBillingInfoSchema.index({ paymentStatus: 1 });
-userBillingInfoSchema.index({ organizationId: 1 });
 
 export const PricingModel: Model<Pricing> = model<Pricing>('Pricing', pricingSchema);
 export const InvoiceModel: Model<Invoice> = model<Invoice>('Invoice', invoiceSchema);

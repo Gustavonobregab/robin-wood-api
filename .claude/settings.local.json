@@ -6,7 +6,9 @@
       "Bash(curl:*)",
       "WebFetch(domain:elysiajs.com)",
       "WebSearch",
-      "WebFetch(domain:www.adarsha.dev)"
+      "WebFetch(domain:www.adarsha.dev)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsc:*)"
     ]
   }
 }

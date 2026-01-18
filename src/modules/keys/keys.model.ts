@@ -10,7 +10,6 @@ export interface ApiKey {
   revokedAt?: Date;
   createdAt: Date;
   lastUsedAt?: Date;
-  organizationId?: string; // null = personal key
 }
 
 const apiKeySchema = new Schema<ApiKey>({
@@ -21,11 +20,9 @@ const apiKeySchema = new Schema<ApiKey>({
   revokedAt: Date,
   createdAt: { type: Date, default: Date.now },
   lastUsedAt: Date,
-  organizationId: String,
 });
 
 apiKeySchema.index({ key: 1 }, { unique: true });
 apiKeySchema.index({ userId: 1 });
-apiKeySchema.index({ organizationId: 1 });
 
 export const ApiKeyModel: Model<ApiKey> = model<ApiKey>('ApiKey', apiKeySchema);

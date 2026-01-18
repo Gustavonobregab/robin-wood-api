@@ -11,7 +11,6 @@ export interface WebhookEvent {
   attempts: number;
   lastError?: string;
   createdAt: Date;
-  organizationId?: string;
 }
 
 const webhookEventSchema = new Schema<WebhookEvent>({
@@ -27,11 +26,9 @@ const webhookEventSchema = new Schema<WebhookEvent>({
   attempts: { type: Number, default: 0 },
   lastError: String,
   createdAt: { type: Date, default: Date.now },
-  organizationId: String,
 });
 
 webhookEventSchema.index({ userId: 1, createdAt: -1 });
-webhookEventSchema.index({ organizationId: 1, createdAt: -1 });
-webhookEventSchema.index({ eventType: 1, deliveredAt: 1 }); // For retry of failed deliveries
+webhookEventSchema.index({ eventType: 1, deliveredAt: 1 });
 
 export const WebhookEventModel: Model<WebhookEvent> = model<WebhookEvent>('WebhookEvent', webhookEventSchema);
