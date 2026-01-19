@@ -25,6 +25,7 @@ export class UsersService {
     const newUser = await UserModel.create({
       oderId,
       email,
+      webhookUrl: undefined, // Começa vazio
       freeTier: {
         operationsLimit: DEFAULT_FREE_TIER_LIMIT,
         operationsUsed: 0,
@@ -112,6 +113,38 @@ export class UsersService {
       operationsRemaining,
       resetsAt,
       percentUsed,
+    };
+  }
+
+  // --- NOVO MÉTODO ---
+  async updateWebhookUrl(oderId: string, url: string): Promise<{ message: string; webhookUrl: string }> {
+    // 1. Validação simples de URL
+    try {
+      new URL(url);
+    } catch (e) {
+      throw new ApiError('INVALID_INPUT', 'Invalid URL format', 400);
+    }
+
+    // 2. Atualiza no Banco
+    const user = await UserModel.findOneAndUpdate(
+      { oderId },
+      { 
+        $set: { 
+          webhookUrl: url,
+          updatedAt: new Date()
+        } 
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
+    }
+
+    // Força a tipagem de retorno pois sabemos que webhookUrl agora existe
+    return { 
+      message: 'Webhook URL configured successfully', 
+      webhookUrl: user.webhookUrl! 
     };
   }
 }

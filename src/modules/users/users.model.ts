@@ -5,6 +5,7 @@ export interface User {
   _id: ObjectId;
   oderId: string; // Better Auth user ID (external reference)
   email: string;
+  webhookUrl?: string;
   freeTier: {
     operationsLimit: number;
     operationsUsed: number;
@@ -17,6 +18,7 @@ export interface User {
 const userSchema = new Schema<User>({
   oderId: { type: String, required: true, unique: true },
   email: { type: String, required: true },
+  webhookUrl: { type: String },
   freeTier: {
     operationsLimit: { type: Number, default: 1000 },
     operationsUsed: { type: Number, default: 0 },
