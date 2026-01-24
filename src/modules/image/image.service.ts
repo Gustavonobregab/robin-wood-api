@@ -1,64 +1,46 @@
-import { ImageModel, type Image, type CreateImageInput, type UpdateImageInput } from './image.model';
+import {
+  IMAGE_PRESETS,
+  IMAGE_OPERATIONS,
+  type StealImageInput,
+  type ImagePreset,
+} from './image.model';
 import { ApiError } from '../../lib/api-error';
 
 export class ImageService {
-  async create(userId: string, input: CreateImageInput): Promise<Image> {
-    const image = await ImageModel.create({
-      userId,
-      ...input,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    return image;
-  }
+  async stealImage(userId: string, input: StealImageInput): Promise<string> {
+    const { preset, operations: customOps } = input;
 
-  async getById(userId: string, id: string): Promise<Image> {
-    const image = await ImageModel.findOne({ _id: id, userId });
-    if (!image) {
-      throw new ApiError('IMAGE_NOT_FOUND', 'Image not found', 404);
+    if (!preset && !customOps) {
+      throw new ApiError(
+        'IMAGE_INVALID_INPUT',
+        'Either preset or operations must be provided',
+        400,
+      );
     }
-    return image;
+
+    const operations = preset
+      ? IMAGE_PRESETS[preset as ImagePreset].operations
+      : customOps!;
+
+    return "Mock" + operations;
   }
 
-  async list(
-    userId: string,
-    options?: { limit?: number; offset?: number }
-  ): Promise<{ items: Image[]; total: number; hasMore: boolean }> {
-    const limit = options?.limit || 20;
-    const offset = options?.offset || 0;
-
-    const [items, total] = await Promise.all([
-      ImageModel.find({ userId })
-        .sort({ createdAt: -1 })
-        .skip(offset)
-        .limit(limit + 1),
-      ImageModel.countDocuments({ userId }),
-    ]);
-
-    const hasMore = items.length > limit;
-    if (hasMore) items.pop();
-
-    return { items, total, hasMore };
+  listPresets() {
+    return Object.entries(IMAGE_PRESETS).map(([id, preset]) => ({
+      id,
+      name: preset.name,
+      description: preset.description,
+      operations: preset.operations.map(op => op.type),
+    }));
   }
 
-  async update(userId: string, id: string, input: UpdateImageInput): Promise<Image> {
-    const image = await ImageModel.findOneAndUpdate(
-      { _id: id, userId },
-      { $set: { ...input, updatedAt: new Date() } },
-      { new: true }
-    );
-    if (!image) {
-      throw new ApiError('IMAGE_NOT_FOUND', 'Image not found', 404);
-    }
-    return image;
-  }
-
-  async delete(userId: string, id: string): Promise<{ deleted: boolean }> {
-    const result = await ImageModel.deleteOne({ _id: id, userId });
-    if (result.deletedCount === 0) {
-      throw new ApiError('IMAGE_NOT_FOUND', 'Image not found', 404);
-    }
-    return { deleted: true };
+  listOperations() {
+    return Object.entries(IMAGE_OPERATIONS).map(([id, op]) => ({
+      id,
+      name: op.name,
+      description: op.description,
+      params: op.params,
+    }));
   }
 }
 

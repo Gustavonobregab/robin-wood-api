@@ -1,60 +1,94 @@
-import { Schema, model, Model } from 'mongoose';
-import type { ObjectId } from 'mongoose';
+import { t, type Static } from 'elysia';
 
-export interface Image {
-  _id: ObjectId;
-  userId: string;
-  name: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  width?: number;
-  height?: number;
-  format?: string;
-  colorSpace?: string;
-  hasAlpha?: boolean;
-  storagePath?: string;
-  metadata?: Record<string, unknown>;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type ImagePreset = 'chill' | 'medium' | 'aggressive' | 'podcast';
 
-export interface CreateImageInput {
-  name: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  width?: number;
-  height?: number;
-  format?: string;
-  colorSpace?: string;
-  hasAlpha?: boolean;
-  storagePath?: string;
-  metadata?: Record<string, unknown>;
-}
-
-export interface UpdateImageInput {
-  name?: string;
-  metadata?: Record<string, unknown>;
-}
-
-const imageSchema = new Schema<Image>({
-  userId: { type: String, required: true, index: true },
-  name: { type: String, required: true },
-  originalName: { type: String, required: true },
-  mimeType: { type: String, required: true },
-  size: { type: Number, required: true },
-  width: { type: Number },
-  height: { type: Number },
-  format: { type: String },
-  colorSpace: { type: String },
-  hasAlpha: { type: Boolean },
-  storagePath: { type: String },
-  metadata: { type: Schema.Types.Mixed },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
+const ResizeOperation = t.Object({
+  type: t.Literal('resize'),
+  params: t.Optional(t.Object({
+    width: t.Optional(t.Number({ minimum: 1, maximum: 8192 })),
+    height: t.Optional(t.Number({ minimum: 1, maximum: 8192 })),
+    fit: t.Optional(t.Union([
+      t.Literal('cover'),
+      t.Literal('contain'),
+      t.Literal('fill'),
+    ])),
+  })),
 });
 
-imageSchema.index({ userId: 1, createdAt: -1 });
+const CompressOperation = t.Object({
+  type: t.Literal('compress'),
+  params: t.Optional(t.Object({
+    quality: t.Optional(t.Number({ minimum: 1, maximum: 100 })),
+    format: t.Optional(t.Union([
+      t.Literal('jpeg'),
+      t.Literal('png'),
+      t.Literal('webp'),
+    ])),
+  })),
+});
 
-export const ImageModel: Model<Image> = model<Image>('Image', imageSchema);
+export const ImageOperationSchema = t.Union([
+  ResizeOperation,
+  CompressOperation,
+]);
+
+export type ImageOperation = Static<typeof ImageOperationSchema>;
+
+export interface StealImageInput {
+  file: File;
+  preset?: ImagePreset;
+  operations?: ImageOperation[];
+}
+
+export const IMAGE_OPERATIONS = {
+  'resize': {
+    name: 'Resize',
+    description: 'Resize image dimensions',
+    params: {
+      width: { type: 'number', min: 1, max: 8192 },
+      height: { type: 'number', min: 1, max: 8192 },
+      fit: { type: 'string', options: ['cover', 'contain', 'fill'], default: 'cover' },
+    },
+  },
+  'compress': {
+    name: 'Compress',
+    description: 'Compress and optimize image',
+    params: {
+      quality: { type: 'number', min: 1, max: 100, default: 80 },
+      format: { type: 'string', options: ['jpeg', 'png', 'webp'], default: 'webp' },
+    },
+  },
+} as const;
+
+export const IMAGE_PRESETS = {
+  chill: {
+    name: 'Chill',
+    description: 'Light compression, preserves quality',
+    operations: [
+      { type: 'compress', params: { quality: 90 } },
+    ],
+  },
+  medium: {
+    name: 'Medium',
+    description: 'Balanced compression',
+    operations: [
+      { type: 'compress', params: { quality: 75, format: 'webp' } },
+    ],
+  },
+  aggressive: {
+    name: 'Aggressive',
+    description: 'Maximum compression',
+    operations: [
+      { type: 'resize', params: { width: 1920, fit: 'contain' } },
+      { type: 'compress', params: { quality: 60, format: 'webp' } },
+    ],
+  },
+  podcast: {
+    name: 'Podcast',
+    description: 'Optimized for thumbnails and covers',
+    operations: [
+      { type: 'resize', params: { width: 1400, height: 1400, fit: 'cover' } },
+      { type: 'compress', params: { quality: 85, format: 'jpeg' } },
+    ],
+  },
+} as const;
