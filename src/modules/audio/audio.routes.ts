@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { validateApiKey } from '../../middlewares/validate-api-key';
 import { audioService } from './audio.service';
+import { AudioOperationSchema } from './audio.model';
 
 export const audioRoutes = new Elysia({ prefix: '/audio' })
   .use(validateApiKey)
@@ -8,37 +9,23 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
   .post(
     '/',
     async ({ body, userId }) => {
-      return await audioService.create(userId, body);
+      return await audioService.stealAudio(userId, body);
     },
     {
       body: t.Object({
-        name: t.String({ minLength: 1 }),
-        originalName: t.String({ minLength: 1 }),
-        mimeType: t.String({ minLength: 1 }),
-        size: t.Number({ minimum: 0 }),
-        duration: t.Optional(t.Number({ minimum: 0 })),
-        format: t.Optional(t.String()),
-        sampleRate: t.Optional(t.Number({ minimum: 0 })),
-        channels: t.Optional(t.Number({ minimum: 1 })),
-        bitrate: t.Optional(t.Number({ minimum: 0 })),
-        storagePath: t.Optional(t.String()),
-        metadata: t.Optional(t.Record(t.String(), t.Unknown())),
-      }),
-    }
-  )
-
-  .get(
-    '/',
-    async ({ query, userId }) => {
-      return await audioService.list(userId, {
-        limit: query.limit,
-        offset: query.offset,
-      });
-    },
-    {
-      query: t.Object({
-        limit: t.Optional(t.Number({ minimum: 1, maximum: 100, default: 20 })),
-        offset: t.Optional(t.Number({ minimum: 0, default: 0 })),
+        file: t.File(),
+        preset: t.Optional(t.Union([
+          t.Literal('chill'),
+          t.Literal('medium'),
+          t.Literal('aggressive'),
+          t.Literal('podcast'),
+        ])),
+        operations: t.Optional(
+          t.Array(AudioOperationSchema, {
+            minItems: 1,
+            maxItems: 10,
+          }),
+        ),
       }),
     }
   )
@@ -55,30 +42,10 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
     }
   )
 
-  .patch(
-    '/:id',
-    async ({ params, body, userId }) => {
-      return await audioService.update(userId, params.id, body);
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-      body: t.Object({
-        name: t.Optional(t.String({ minLength: 1 })),
-        metadata: t.Optional(t.Record(t.String(), t.Unknown())),
-      }),
-    }
-  )
+  .get('/presets', () => {
+    return audioService.listPresets();
+  })
 
-  .delete(
-    '/:id',
-    async ({ params, userId }) => {
-      return await audioService.delete(userId, params.id);
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-    }
-  );
+  .get('/operations', () => {
+    return audioService.listOperations();
+  })
