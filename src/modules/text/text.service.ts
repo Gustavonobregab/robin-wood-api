@@ -1,64 +1,46 @@
-import { TextModel, type Text, type CreateTextInput, type UpdateTextInput } from './text.model';
+import {
+  TEXT_PRESETS,
+  TEXT_OPERATIONS,
+  type StealTextInput,
+  type TextPreset,
+} from './text.model';
 import { ApiError } from '../../lib/api-error';
 
 export class TextService {
-  async create(userId: string, input: CreateTextInput): Promise<Text> {
-    const text = await TextModel.create({
-      userId,
-      ...input,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    return text;
-  }
+  async stealText(userId: string, input: StealTextInput): Promise<string> {
+    const { preset, operations: customOps } = input;
 
-  async getById(userId: string, id: string): Promise<Text> {
-    const text = await TextModel.findOne({ _id: id, userId });
-    if (!text) {
-      throw new ApiError('TEXT_NOT_FOUND', 'Text not found', 404);
+    if (!preset && !customOps) {
+      throw new ApiError(
+        'TEXT_INVALID_INPUT',
+        'Either preset or operations must be provided',
+        400,
+      );
     }
-    return text;
+
+    const operations = preset
+      ? TEXT_PRESETS[preset as TextPreset].operations
+      : customOps!;
+
+    return "Mock" + operations;
   }
 
-  async list(
-    userId: string,
-    options?: { limit?: number; offset?: number }
-  ): Promise<{ items: Text[]; total: number; hasMore: boolean }> {
-    const limit = options?.limit || 20;
-    const offset = options?.offset || 0;
-
-    const [items, total] = await Promise.all([
-      TextModel.find({ userId })
-        .sort({ createdAt: -1 })
-        .skip(offset)
-        .limit(limit + 1),
-      TextModel.countDocuments({ userId }),
-    ]);
-
-    const hasMore = items.length > limit;
-    if (hasMore) items.pop();
-
-    return { items, total, hasMore };
+  listPresets() {
+    return Object.entries(TEXT_PRESETS).map(([id, preset]) => ({
+      id,
+      name: preset.name,
+      description: preset.description,
+      operations: preset.operations.map(op => op.type),
+    }));
   }
 
-  async update(userId: string, id: string, input: UpdateTextInput): Promise<Text> {
-    const text = await TextModel.findOneAndUpdate(
-      { _id: id, userId },
-      { $set: { ...input, updatedAt: new Date() } },
-      { new: true }
-    );
-    if (!text) {
-      throw new ApiError('TEXT_NOT_FOUND', 'Text not found', 404);
-    }
-    return text;
-  }
-
-  async delete(userId: string, id: string): Promise<{ deleted: boolean }> {
-    const result = await TextModel.deleteOne({ _id: id, userId });
-    if (result.deletedCount === 0) {
-      throw new ApiError('TEXT_NOT_FOUND', 'Text not found', 404);
-    }
-    return { deleted: true };
+  listOperations() {
+    return Object.entries(TEXT_OPERATIONS).map(([id, op]) => ({
+      id,
+      name: op.name,
+      description: op.description,
+      params: op.params,
+    }));
   }
 }
 

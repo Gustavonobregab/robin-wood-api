@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { validateApiKey } from '../../middlewares/validate-api-key';
 import { textService } from './text.service';
+import { TextOperationSchema } from './text.model';
 
 export const textRoutes = new Elysia({ prefix: '/text' })
   .use(validateApiKey)
@@ -8,76 +9,31 @@ export const textRoutes = new Elysia({ prefix: '/text' })
   .post(
     '/',
     async ({ body, userId }) => {
-      return await textService.create(userId, body);
+      return await textService.stealText(userId, body);
     },
     {
       body: t.Object({
-        name: t.String({ minLength: 1 }),
-        originalName: t.String({ minLength: 1 }),
-        mimeType: t.String({ minLength: 1 }),
-        size: t.Number({ minimum: 0 }),
-        encoding: t.Optional(t.String()),
-        language: t.Optional(t.String()),
-        charCount: t.Optional(t.Number({ minimum: 0 })),
-        wordCount: t.Optional(t.Number({ minimum: 0 })),
-        storagePath: t.Optional(t.String()),
-        metadata: t.Optional(t.Record(t.String(), t.Unknown())),
+        file: t.File(),
+        preset: t.Optional(t.Union([
+          t.Literal('chill'),
+          t.Literal('medium'),
+          t.Literal('aggressive'),
+          t.Literal('podcast'),
+        ])),
+        operations: t.Optional(
+          t.Array(TextOperationSchema, {
+            minItems: 1,
+            maxItems: 10,
+          }),
+        ),
       }),
     }
   )
 
-  .get(
-    '/',
-    async ({ query, userId }) => {
-      return await textService.list(userId, {
-        limit: query.limit,
-        offset: query.offset,
-      });
-    },
-    {
-      query: t.Object({
-        limit: t.Optional(t.Number({ minimum: 1, maximum: 100, default: 20 })),
-        offset: t.Optional(t.Number({ minimum: 0, default: 0 })),
-      }),
-    }
-  )
+  .get('/presets', () => {
+    return textService.listPresets();
+  })
 
-  .get(
-    '/:id',
-    async ({ params, userId }) => {
-      return await textService.getById(userId, params.id);
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-    }
-  )
-
-  .patch(
-    '/:id',
-    async ({ params, body, userId }) => {
-      return await textService.update(userId, params.id, body);
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-      body: t.Object({
-        name: t.Optional(t.String({ minLength: 1 })),
-        metadata: t.Optional(t.Record(t.String(), t.Unknown())),
-      }),
-    }
-  )
-
-  .delete(
-    '/:id',
-    async ({ params, userId }) => {
-      return await textService.delete(userId, params.id);
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-    }
-  );
+  .get('/operations', () => {
+    return textService.listOperations();
+  });

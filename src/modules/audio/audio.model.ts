@@ -1,14 +1,6 @@
-import { Schema, model, Model } from 'mongoose';
-import type { ObjectId } from 'mongoose';
-import { t } from 'elysia';
+import { t, type Static } from 'elysia';
 
 export type AudioPreset = 'chill' | 'medium' | 'aggressive' | 'podcast';
-
-export type AudioOperationType = 'trim-silence' | 'normalize' | 'compress';
-export interface AudioOperation {
-  type: AudioOperationType;
-  params?: Record<string, unknown>;
-}
 
 const CompressOperation = t.Object({
   type: t.Literal('compress'),
@@ -40,33 +32,12 @@ export const AudioOperationSchema = t.Union([
   TrimSilenceOperation,
 ]);
 
+export type AudioOperation = Static<typeof AudioOperationSchema>;
+
 export interface StealAudioInput {
   file: File;
   preset?: AudioPreset;
   operations?: AudioOperation[];
-}
-
-export interface Audio {
-  _id: ObjectId;
-  userId: string;
-  originalName: string;
-  mimeType: string;
-  inputSize: number;
-  outputSize?: number;
-  compressionRatio?: number;
-  duration?: number;
-  format?: string;
-  sampleRate?: number;
-  channels?: number;
-  bitrate?: number;
-  preset?: AudioPreset;
-  operations?: AudioOperation[];
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  inputPath?: string;
-  outputPath?: string;
-  error?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export const AUDIO_OPERATIONS = {
@@ -135,35 +106,3 @@ export const AUDIO_PRESETS = {
     ],
   },
 } as const;
-
-const audioOperationSchema = new Schema<AudioOperation>({
-  type: { type: String, enum: ['trim-silence', 'normalize', 'compress'], required: true },
-  params: { type: Schema.Types.Mixed },
-}, { _id: false });
-
-const audioSchema = new Schema<Audio>({
-  userId: { type: String, required: true, index: true },
-  originalName: { type: String, required: true },
-  mimeType: { type: String, required: true },
-  inputSize: { type: Number, required: true },
-  outputSize: { type: Number },
-  compressionRatio: { type: Number },
-  duration: { type: Number },
-  format: { type: String },
-  sampleRate: { type: Number },
-  channels: { type: Number },
-  bitrate: { type: Number },
-  preset: { type: String, enum: ['chill', 'medium', 'aggressive', 'podcast'] },
-  operations: { type: [audioOperationSchema] },
-  status: { type: String, enum: ['pending', 'processing', 'completed', 'failed'], default: 'pending' },
-  inputPath: { type: String },
-  outputPath: { type: String },
-  error: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
-
-audioSchema.index({ userId: 1, createdAt: -1 });
-audioSchema.index({ userId: 1, status: 1 });
-
-export const AudioModel: Model<Audio> = model<Audio>('Audio', audioSchema);

@@ -1,24 +1,29 @@
 import {
-  AudioModel,
   AUDIO_PRESETS,
   AUDIO_OPERATIONS,
-  type Audio,
   type StealAudioInput,
+  type AudioPreset,
 } from './audio.model';
 import { ApiError } from '../../lib/api-error';
 
 export class AudioService {
-  //TODO: REMOVE ANY FROM PROMISE, RETURN PROPER TYPE 
-  async stealAudio(userId: string, input: StealAudioInput): Promise<any> {
-    const file = input.file;
+  //TODO: RETURN PROPER TYPE ON PROMISE
+  async stealAudio(userId: string, input: StealAudioInput): Promise<string> {
+    const { preset, operations: customOps } = input;
 
-    let operations = input.operations || [];
-
-    if (input.preset && AUDIO_PRESETS[input.preset]) {
-      operations = [...AUDIO_PRESETS[input.preset].operations];
+    if (!preset && !customOps) {
+      throw new ApiError(
+        'AUDIO_INVALID_INPUT',
+        'Either preset or operations must be provided',
+        400,
+      );
     }
 
-    return "Mock"
+    const operations = preset
+      ? AUDIO_PRESETS[preset as AudioPreset].operations
+      : customOps!;
+
+    return "Mock" + operations;
   }
 
   listPresets() {
@@ -38,16 +43,6 @@ export class AudioService {
       params: op.params,
     }));
   }
-
-  async getById(userId: string, id: string): Promise<Audio> {
-    const audio = await AudioModel.findOne({ _id: id, userId });
-    
-    if (!audio) {
-      throw new ApiError('AUDIO_NOT_FOUND', 'Audio not found', 404);
-    }
-    return audio;
-  }
-
 }
 
 export const audioService = new AudioService();

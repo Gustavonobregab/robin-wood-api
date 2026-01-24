@@ -30,18 +30,6 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
     }
   )
 
-  .get(
-    '/:id',
-    async ({ params, userId }) => {
-      return await audioService.getById(userId, params.id);
-    },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-    }
-  )
-
   .get('/presets', () => {
     return audioService.listPresets();
   })
