@@ -11,6 +11,7 @@ import { textRoutes } from './modules/text/text.routes';
 import { imageRoutes } from './modules/image/image.routes';
 import { videoRoutes } from './modules/video/video.routes';
 import webhooksRoutes from './modules/webhooks/webhooks.routes';
+import { apiRoutes } from './modules/api/api.routes';
 
 const app = new Elysia()
   .use(apiErrorPlugin)
@@ -24,7 +25,8 @@ const app = new Elysia()
   .use(audioRoutes)
   .use(textRoutes)
   .use(imageRoutes)
-  .use(videoRoutes);
+  .use(videoRoutes)
+  .use(apiRoutes);
 
 async function start() {
   try {

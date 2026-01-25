@@ -31,6 +31,12 @@ export interface StealTextInput {
   operations?: TextOperation[];
 }
 
+export interface ProcessTextData {
+  file: File;
+  preset?: TextPreset;
+  operations?: TextOperation[];
+}
+
 export const TEXT_OPERATIONS = {
   'json-to-toon': {
     name: 'JSON to TOON',

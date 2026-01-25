@@ -42,6 +42,12 @@ export interface StealAudioInput {
   operations?: AudioOperation[];
 }
 
+export interface ProcessAudioData {
+  file: File;
+  preset?: AudioPreset;
+  operations?: AudioOperation[];
+}
+
 export const AUDIO_OPERATIONS = {
   'trim-silence': {
     name: 'Trim Silence',
