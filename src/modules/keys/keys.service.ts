@@ -5,7 +5,7 @@ import { ApiError } from '../../utils/api-error';
 export class KeysService {
   async createKey(userId: string, name: string): Promise<ApiKey> {
     // TODO: Implement key creation
-    throw new Error('Not implemented');
+    throw new ApiError('NOT_IMPLEMENTED', 'Key creation not implemented', 501);
   }
 
   async getKeysByUserId(userId: string): Promise<ApiKey[]> {

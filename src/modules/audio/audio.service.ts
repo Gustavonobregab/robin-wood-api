@@ -53,6 +53,7 @@ export class AudioService {
     const outputWavBuffer = await this.encodeToWav(result.data as Buffer);
 
     const operationNames = operationsToRun.map(op => op.type);
+    
     const inputHash = hashInput({
       userId,
       pipelineType: 'audio',

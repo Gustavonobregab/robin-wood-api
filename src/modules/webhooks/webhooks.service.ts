@@ -1,6 +1,7 @@
 import { WebhookEventModel } from './webhooks.model';
 import type { WebhookEvent } from './webhooks.types';
-import { UserModel } from '../users/users.model'; // Importe para pegar a URL do usuário, se estiver lá
+import { UserModel } from '../users/users.model';
+import { ApiError } from '../../utils/api-error';
 
 export class WebhooksService {
   
@@ -41,7 +42,7 @@ export class WebhooksService {
       const targetUrl = (user as any)?.webhookUrl; 
 
       if (!targetUrl) {
-        throw new Error('Usuário não configurou URL de Webhook.');
+        throw new ApiError('WEBHOOK_URL_NOT_CONFIGURED', 'User has not configured webhook URL', 400);
       }
 
       console.log(`🚀 Enviando webhook ${event.eventType} para ${targetUrl}`);
@@ -66,7 +67,7 @@ export class WebhooksService {
       });
 
       if (!response.ok) {
-        throw new Error(`Servidor cliente respondeu com status ${response.status}`);
+        throw new ApiError('WEBHOOK_DELIVERY_FAILED', `Client server responded with status ${response.status}`, response.status);
       }
 
       // Sucesso
@@ -104,7 +105,7 @@ export class WebhooksService {
   async retryEvent(eventId: string, userId: string) {
     const event = await WebhookEventModel.findOne({ _id: eventId, userId });
     
-    if (!event) throw new Error('Evento não encontrado');
+    if (!event) throw new ApiError('WEBHOOK_EVENT_NOT_FOUND', 'Event not found', 404);
 
     // Reseta status de falha para tentar de novo
     event.failedAt = undefined; 

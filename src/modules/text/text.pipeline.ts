@@ -1,7 +1,8 @@
 // src/modules/text/text.pipeline.ts
 
 import { Pipeline, Operation } from '../../pipeline';
-import { PipelineResult, TextDetails, calculateMetrics } from './text.types';
+import { PipelineResult, TextDetails, calculateMetrics, TextOperation } from './text.types';
+import { ApiError } from '../../utils/api-error';
 
 // Importa a função de formatação do utilitário que criamos em src/utils/toon.ts
 import { encode as toonEncode } from '../../utils/toon';
@@ -32,8 +33,9 @@ export class TextPipeline extends Pipeline<TextData, TextResult> {
      * Mapeado para o tipo 'syntax' do model.
      */
     syntax(params: { language?: string; strict?: boolean } = {}): TextPipeline {
-        this.add('syntax', params);
-        return this;
+        const pipeline = this.add('syntax', params) as TextPipeline;
+        pipeline.originalSize = this.originalSize;
+        return pipeline;
     }
 
     /**
@@ -43,8 +45,22 @@ export class TextPipeline extends Pipeline<TextData, TextResult> {
      */
     jsonToToon(params: { indent?: number; compact?: boolean } = {}): TextPipeline {
         // Importante: O nome da operação aqui ('json-to-toon') DEVE ser idêntico ao do text.model.ts
-        this.add('json-to-toon', params); 
-        return this;
+        const pipeline = this.add('json-to-toon', params) as TextPipeline;
+        pipeline.originalSize = this.originalSize;
+        return pipeline;
+    }
+
+    apply(op: TextOperation): TextPipeline {
+        switch (op.type) {
+            case 'syntax': {
+                return this.syntax(op.params);
+            }
+            case 'json-to-toon': {
+                return this.jsonToToon(op.params);
+            }
+            default:
+                throw new ApiError('TEXT_UNKNOWN_OPERATION', `Unknown operation type: ${(op as any).type}`, 400);
+        }
     }
 
     // Função interna que orquestra a execução sequencial
@@ -105,7 +121,7 @@ async function runSyntax(data: TextData, strict: boolean = false): Promise<TextD
     if (strict) {
         // Exemplo: Se o texto ficar vazio após o trim, lança erro em modo estrito
         if (processed.length === 0 && data.length > 0) {
-            throw new Error("Syntax Error: Content became empty after processing.");
+            throw new ApiError('TEXT_SYNTAX_ERROR', 'Content became empty after processing', 400);
         }
     }
     

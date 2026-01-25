@@ -4,6 +4,7 @@ import { Pipeline, Operation } from '../../pipeline';
 import ffmpeg from 'fluent-ffmpeg';
 import { PassThrough, Readable } from 'stream';
 import { AudioData, AudioResult, AudioDetails, calculateMetrics, AudioOperation } from './audio.types';
+import { ApiError } from '../../utils/api-error';
 
 const DEFAULT_SAMPLE_RATE = 44100;
 
@@ -27,7 +28,7 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
     // --- Fluent API Methods ---
 
     speedup(rate: number): AudioPipeline {
-        if (rate < 0.25 || rate > 100) throw new Error('Speed rate must be between 0.25 and 100');
+        if (rate < 0.25 || rate > 100) throw new ApiError('AUDIO_INVALID_SPEED_RATE', 'Speed rate must be between 0.25 and 100', 400);
         
         const pipeline = this.add('speedup', { rate }) as AudioPipeline;
         // Preserva métricas originais para cálculo final
@@ -51,7 +52,7 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
     }
 
     volume(level: number): AudioPipeline {
-        if (level < 0 || level > 2) throw new Error('Volume level must be between 0 and 2');
+        if (level < 0 || level > 2) throw new ApiError('AUDIO_INVALID_VOLUME_LEVEL', 'Volume level must be between 0 and 2', 400);
 
         const pipeline = this.add('volume', { level }) as AudioPipeline;
         pipeline.originalSize = this.originalSize;
@@ -82,7 +83,7 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
                 return this.volume(linearGain);
             }
             default:
-                throw new Error(`Unknown operation type: ${(op as any).type}`);
+                throw new ApiError('AUDIO_UNKNOWN_OPERATION', `Unknown operation type: ${(op as any).type}`, 400);
         }
     }
 
@@ -107,17 +108,17 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
         const isRiff = buffer.toString('ascii', 0, 4) === 'RIFF';
         const isWave = buffer.toString('ascii', 8, 12) === 'WAVE';
         if (isRiff && isWave) {
-            throw new Error("[RobinWood] Error: Raw WAV file detected. Please decode to Float32 PCM first.");
+            throw new ApiError('AUDIO_INVALID_FORMAT', 'Raw WAV file detected. Please decode to Float32 PCM first', 400);
         }
 
         const isFtyp = buffer.toString('ascii', 4, 8) === 'ftyp';
         if (isFtyp) {
-            throw new Error("[RobinWood] Error: MP4/AAC detected. Please decode audio first.");
+            throw new ApiError('AUDIO_INVALID_FORMAT', 'MP4/AAC detected. Please decode audio first', 400);
         }
 
         const isId3 = buffer.toString('ascii', 0, 3) === 'ID3';
         if (isId3) {
-            throw new Error("[RobinWood] Error: MP3 detected. Please decode audio first.");
+            throw new ApiError('AUDIO_INVALID_FORMAT', 'MP3 detected. Please decode audio first', 400);
         }
     }
 
@@ -160,7 +161,7 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
             case 'volume':
                 return volume(data, params.level);
             default:
-                throw new Error(`Unknown operation: ${op}`);
+                throw new ApiError('AUDIO_UNKNOWN_OPERATION', `Unknown operation: ${op}`, 400);
         }
     }
 }
@@ -184,7 +185,7 @@ function toFloat32Array(data: AudioData): Float32Array {
     if (data instanceof Uint8Array) {
         return new Float32Array(data.buffer, data.byteOffset, data.length / 4);
     }
-    throw new Error('Unsupported audio data type');
+    throw new ApiError('AUDIO_UNSUPPORTED_TYPE', 'Unsupported audio data type', 400);
 }
 
 function toBuffer(data: Float32Array): Buffer {

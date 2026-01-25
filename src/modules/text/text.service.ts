@@ -42,14 +42,10 @@ export class TextService {
       ? TEXT_PRESETS[preset as TextPreset].operations
       : customOps!) as TextOperation[];
 
-    const pipeline = new TextPipeline(content);
+    let pipeline = new TextPipeline(content);
 
     for (const op of operationsToRun) {
-      if (op.type === 'syntax') {
-        pipeline.syntax(op.params);
-      } else if (op.type === 'json-to-toon') {
-        pipeline.jsonToToon(op.params);
-      }
+      pipeline = pipeline.apply(op);
     }
 
     const result = await pipeline.execute();
