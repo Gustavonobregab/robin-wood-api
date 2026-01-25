@@ -5,6 +5,15 @@ export interface Operation {
   params: any;
 }
 
+export interface PipelineResult<TData, TDetails> {
+  data: TData;
+  metrics: {
+    [key: string]: any; // Permite métricas flexíveis (bytes, caracteres, porcentagem)
+  };
+  details: TDetails;
+  operations: string[];
+}
+
 export abstract class Pipeline<TData, TResult> {
   protected ops: Operation[] = [];
 
