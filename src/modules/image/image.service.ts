@@ -3,7 +3,7 @@ import {
   IMAGE_OPERATIONS,
   type StealImageInput,
   type ImagePreset,
-} from './image.model';
+} from './image.types';
 import { ApiError } from '../../utils/api-error';
 
 export class ImageService {

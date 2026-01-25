@@ -4,8 +4,8 @@ import { imageService } from '../image/image.service';
 import { videoService } from '../video/video.service';
 import type { ProcessAudioData } from '../audio/audio.types';
 import type { ProcessTextData } from '../text/text.types';
-import type { StealImageInput } from '../image/image.model';
-import type { StealVideoInput } from '../video/video.model';
+import type { StealImageInput } from '../image/image.types';
+import type { StealVideoInput } from '../video/video.types';
 interface UsageContext {
   apiKeyId?: string;
 }

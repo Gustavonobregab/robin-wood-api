@@ -1,4 +1,5 @@
-import { SubscriptionModel, PlanModel, type Subscription } from './subscriptions.model';
+import { SubscriptionModel, PlanModel } from './subscriptions.model';
+import type { Subscription } from './subscriptions.types';
 
 export class SubscriptionsService {
   async getSubscriptionByUserId(userId: string) {

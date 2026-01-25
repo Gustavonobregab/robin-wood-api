@@ -1,19 +1,6 @@
 import { Schema, model, Model } from 'mongoose';
-import type { ObjectId } from 'mongoose';
 import { DEFAULT_TOKENS_LIMIT } from '../usage/usage.types';
-
-export interface User {
-  _id: ObjectId;
-  oderId: string;
-  email: string;
-  webhookUrl?: string;
-  tokens: {
-    limit: number;
-    used: number;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { User } from './users.types';
 
 const userSchema = new Schema<User>({
   oderId: { type: String, required: true, unique: true },

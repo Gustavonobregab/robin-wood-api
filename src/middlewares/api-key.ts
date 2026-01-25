@@ -16,6 +16,8 @@ export const validateApiKey = new Elysia({ name: 'validate-api-key' })
       throw new ApiError('API_KEY_INVALID', 'Invalid or revoked API key', 401);
     }
 
+    //TODO : VALIDATE USAGE 
+
     await ApiKeyModel.updateOne({ _id: keyRecord._id }, { lastUsedAt: new Date() });
 
     return {

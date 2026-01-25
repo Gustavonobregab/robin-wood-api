@@ -1,4 +1,5 @@
-import { PricingModel, InvoiceModel, UserBillingInfoModel, type Pricing, type Invoice, type UserBillingInfo } from './billing.model';
+import { PricingModel, InvoiceModel, UserBillingInfoModel } from './billing.model';
+import type { Pricing, Invoice, UserBillingInfo } from './billing.types';
 
 export class BillingService {
   async getCurrentBilling(userId: string): Promise<UserBillingInfo | null> {

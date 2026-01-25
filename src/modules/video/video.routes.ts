@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { videoService } from './video.service';
-import { VideoOperationSchema } from './video.model';
+import { VideoOperationSchema } from './video.types';
 
 export const videoRoutes = new Elysia({ prefix: '/video' })
   .use(validateDashboardAuth)

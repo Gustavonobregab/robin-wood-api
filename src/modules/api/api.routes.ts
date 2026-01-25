@@ -3,8 +3,8 @@ import { apiService } from './api.service';
 import { validateApiKey } from '../../middlewares/api-key';
 import { AudioOperationSchema } from '../audio/audio.types';
 import { TextOperationSchema } from '../text/text.types';
-import { ImageOperationSchema } from '../image/image.model';
-import { VideoOperationSchema } from '../video/video.model';
+import { ImageOperationSchema } from '../image/image.types';
+import { VideoOperationSchema } from '../video/video.types';
 
 export const apiRoutes = new Elysia({ prefix: '/api' })
   .use(validateApiKey)
@@ -12,7 +12,7 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
   .post(
     '/audio',
     async ({ body, userId, apiKeyId }) => {
-      const result = await apiService.processAudio(userId, body, { source: 'api', apiKeyId });
+      const result = await apiService.processAudio(userId, body, { apiKeyId });
       return { data: result };
     },
     {
@@ -47,7 +47,7 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
   .post(
     '/text',
     async ({ body, userId, apiKeyId }) => {
-      const result = await apiService.processText(userId, body, { source: 'api', apiKeyId });
+      const result = await apiService.processText(userId, body, { apiKeyId });
       return { data: result };
     },
     {

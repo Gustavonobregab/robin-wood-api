@@ -1,4 +1,5 @@
-import { ApiKeyModel, type ApiKey } from './keys.model';
+import { ApiKeyModel } from './keys.model';
+import type { ApiKey } from './keys.types';
 import { ApiError } from '../../utils/api-error';
 
 export class KeysService {

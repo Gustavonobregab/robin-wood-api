@@ -1,26 +1,5 @@
 import { Schema, model, Model } from 'mongoose';
-import type { ObjectId } from 'mongoose';
-
-export interface Plan {
-  _id: ObjectId;
-  slug: 'free' | 'pro' | 'enterprise';
-  name: string;
-  operationsPerMonth: number; // -1 = ilimitado
-  priceMonthly: number; // centavos
-  active: boolean;
-}
-
-export interface Subscription {
-  _id: ObjectId;
-  userId: string;
-  planSlug: string; // 'free', 'pro', etc
-  status: 'active' | 'canceled';
-  operationsLimit: number;
-  operationsUsed: number;
-  resetAt: Date; // Próximo reset
-  stripeSubscriptionId?: string;
-  createdAt: Date;
-}
+import type { Plan, Subscription } from './subscriptions.types';
 
 const planSchema = new Schema<Plan>({
   slug: { type: String, enum: ['free', 'pro', 'enterprise'], required: true, unique: true },

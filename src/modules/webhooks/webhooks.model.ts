@@ -1,17 +1,5 @@
 import { Schema, model, Model } from 'mongoose';
-import type { ObjectId } from 'mongoose';
-
-export interface WebhookEvent {
-  _id: ObjectId;
-  userId: string;
-  eventType: 'usage.threshold_reached' | 'invoice.created' | 'payment.failed';
-  payload: Record<string, any>;
-  deliveredAt?: Date;
-  failedAt?: Date;
-  attempts: number;
-  lastError?: string;
-  createdAt: Date;
-}
+import type { WebhookEvent } from './webhooks.types';
 
 const webhookEventSchema = new Schema<WebhookEvent>({
   userId: { type: String, required: true, index: true },

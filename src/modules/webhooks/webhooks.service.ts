@@ -1,4 +1,5 @@
-import { WebhookEventModel, type WebhookEvent } from './webhooks.model';
+import { WebhookEventModel } from './webhooks.model';
+import type { WebhookEvent } from './webhooks.types';
 import { UserModel } from '../users/users.model'; // Importe para pegar a URL do usuário, se estiver lá
 
 export class WebhooksService {

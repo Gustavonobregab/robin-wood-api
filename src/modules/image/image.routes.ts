@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { imageService } from './image.service';
-import { ImageOperationSchema } from './image.model';
+import { ImageOperationSchema } from './image.types';
 
 export const imageRoutes = new Elysia({ prefix: '/image' })
   .use(validateDashboardAuth)

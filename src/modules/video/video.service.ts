@@ -3,7 +3,7 @@ import {
   VIDEO_OPERATIONS,
   type StealVideoInput,
   type VideoPreset,
-} from './video.model';
+} from './video.types';
 import { ApiError } from '../../utils/api-error';
 
 export class VideoService {

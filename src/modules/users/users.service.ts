@@ -1,4 +1,5 @@
-import { UserModel, type User } from './users.model';
+import { UserModel } from './users.model';
+import type { User } from './users.types';
 import { ApiError } from '../../utils/api-error';
 import { DEFAULT_TOKENS_LIMIT } from '../usage/usage.types';
 
