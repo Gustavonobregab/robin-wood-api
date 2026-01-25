@@ -37,42 +37,10 @@ export class AudioService {
     const originalBuffer = Buffer.from(arrayBuffer);
     const rawPcmData = await this.decodeToRaw(originalBuffer);
 
-    const pipeline = new AudioPipeline(rawPcmData);
+    let pipeline = new AudioPipeline(rawPcmData);
 
     for (const op of operationsToRun) {
-      switch (op.type) {
-        
-        case 'trim-silence': {
-          const aggressiveness = op.params?.aggressiveness ?? 0.5;
-          const thresholdDb = -60 + (aggressiveness * 40);
-          
-          pipeline.removeSilence(
-            thresholdDb,
-            op.params?.minSilenceDuration
-          );
-          break;
-        }
-
-        case 'normalize': {
-          pipeline.normalize();
-          
-          const target = op.params?.targetLevel ?? 0;
-          if (target < 0) {
-            const gain = Math.pow(10, target / 20);
-            pipeline.volume(gain);
-          }
-          break;
-        }
-
-        case 'compress': {
-          const threshold = op.params?.threshold ?? -20;
-          const makeupGainDb = Math.abs(threshold) / 2; 
-          const linearGain = Math.pow(10, makeupGainDb / 20);
-          
-          pipeline.volume(linearGain);
-          break;
-        }
-      }
+      pipeline = pipeline.apply(op);
     }
 
     const result = await pipeline.execute();

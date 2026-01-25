@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
+import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { audioService } from './audio.service';
 import { AudioOperationSchema } from './audio.types';
 

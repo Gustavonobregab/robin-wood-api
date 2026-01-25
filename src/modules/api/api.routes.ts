@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { apiService } from './api.service';
-import { validateApiKey } from '../../middlewares/validate-api-key';
+import { validateApiKey } from '../../middlewares/api-key';
 import { AudioOperationSchema } from '../audio/audio.types';
 import { TextOperationSchema } from '../text/text.types';
 import { ImageOperationSchema } from '../image/image.model';

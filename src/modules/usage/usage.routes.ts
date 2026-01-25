@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
+import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { usageService } from './usage.service';
 
 export const usageRoutes = new Elysia({ prefix: '/usage' })
@@ -7,8 +7,9 @@ export const usageRoutes = new Elysia({ prefix: '/usage' })
 
   .post(
     '/',
-    async ({ body, userId, apiKey }) => {
-      const result = await usageService.recordBatch(body.events, apiKey, userId);
+    async ({ body, userId }) => {
+      // TODO: Dashboard usage tracking, apiKey não disponível via sessão
+      const result = await usageService.recordBatch(body.events, 'dashboard', userId);
       return {
         data: result
       };

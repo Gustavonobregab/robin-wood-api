@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
+import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { imageService } from './image.service';
 import { ImageOperationSchema } from './image.model';
 

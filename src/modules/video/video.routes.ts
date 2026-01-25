@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
+import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { videoService } from './video.service';
 import { VideoOperationSchema } from './video.model';
 

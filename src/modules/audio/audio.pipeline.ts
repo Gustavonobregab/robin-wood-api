@@ -3,7 +3,7 @@
 import { Pipeline, Operation } from '../../pipeline';
 import ffmpeg from 'fluent-ffmpeg';
 import { PassThrough, Readable } from 'stream';
-import { AudioData, AudioResult, AudioDetails, calculateMetrics } from './audio.types';
+import { AudioData, AudioResult, AudioDetails, calculateMetrics, AudioOperation } from './audio.types';
 
 const DEFAULT_SAMPLE_RATE = 44100;
 
@@ -52,11 +52,38 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
 
     volume(level: number): AudioPipeline {
         if (level < 0 || level > 2) throw new Error('Volume level must be between 0 and 2');
-        
+
         const pipeline = this.add('volume', { level }) as AudioPipeline;
         pipeline.originalSize = this.originalSize;
         pipeline.originalDuration = this.originalDuration;
         return pipeline;
+    }
+
+    apply(op: AudioOperation): AudioPipeline {
+        switch (op.type) {
+            case 'trim-silence': {
+                const aggressiveness = op.params?.aggressiveness ?? 0.5;
+                const thresholdDb = -60 + (aggressiveness * 40);
+                return this.removeSilence(thresholdDb, op.params?.minSilenceDuration);
+            }
+            case 'normalize': {
+                let pipeline: AudioPipeline = this.normalize();
+                const target = op.params?.targetLevel ?? 0;
+                if (target < 0) {
+                    const gain = Math.pow(10, target / 20);
+                    pipeline = pipeline.volume(gain);
+                }
+                return pipeline;
+            }
+            case 'compress': {
+                const threshold = op.params?.threshold ?? -20;
+                const makeupGainDb = Math.abs(threshold) / 2;
+                const linearGain = Math.pow(10, makeupGainDb / 20);
+                return this.volume(linearGain);
+            }
+            default:
+                throw new Error(`Unknown operation type: ${(op as any).type}`);
+        }
     }
 
     // --- Validation Logic ---
