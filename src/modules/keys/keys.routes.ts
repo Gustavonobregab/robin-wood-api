@@ -6,16 +6,23 @@ const keysService = new KeysService();
 export const keysRoutes = new Elysia({ prefix: '/keys' })
   .get('/', async () => {
     // TODO: Implement get keys
-    return { keys: [] };
+    return {
+      data: { keys: [] }
+    };
   })
   .post('/', async ({ body }) => {
     // TODO: Implement create key
-    return { key: null };
+    return {
+      data: { key: null }
+    };
   })  
   .post(
     '/validate-key',
     async ({ body }) => {
-      return await keysService.validateApiKey(body.apiKey);
+      const result = await keysService.validateApiKey(body.apiKey);
+      return {
+        data: result
+      };
     },
     {
       body: t.Object({ apiKey: t.String({ minLength: 1 }) }),

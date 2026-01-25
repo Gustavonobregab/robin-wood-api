@@ -16,31 +16,43 @@ export const apiErrorPlugin = new Elysia({ name: 'api-error' })
     if (code === 'API_ERROR') {
       set.status = error.status;
       return {
-        error: { code: error.code, message: error.message },
-        status: error.status,
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message
+        }
       };
     }
 
     if (code === 'VALIDATION') {
       set.status = 400;
       return {
-        error: { code: 'VALIDATION_ERROR', message: error.message },
-        status: 400,
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: error.message
+        }
       };
     }
 
     if (code === 'NOT_FOUND') {
       set.status = 404;
       return {
-        error: { code: 'NOT_FOUND', message: 'Resource not found' },
-        status: 404,
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Resource not found'
+        }
       };
     }
 
     set.status = 500;
     return {
-      error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
-      status: 500,
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal server error'
+      }
     };
   })
   .mapResponse({ as: 'global' }, ({ response, set }) => {
@@ -49,7 +61,7 @@ export const apiErrorPlugin = new Elysia({ name: 'api-error' })
     }
 
     return Response.json({
-      data: response,
-      status: set.status || 200,
+      success: true,
+      data: response
     });
   });

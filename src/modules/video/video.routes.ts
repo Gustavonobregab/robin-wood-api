@@ -9,7 +9,10 @@ export const videoRoutes = new Elysia({ prefix: '/video' })
   .post(
     '/',
     async ({ body, userId }) => {
-      return await videoService.stealVideo(userId, body);
+      const result = await videoService.stealVideo(userId, body);
+      return {
+        data: result
+      };
     },
     {
       body: t.Object({
@@ -31,9 +34,15 @@ export const videoRoutes = new Elysia({ prefix: '/video' })
   )
 
   .get('/presets', () => {
-    return videoService.listPresets();
+    const result = videoService.listPresets();
+    return {
+      data: result
+    };
   })
 
   .get('/operations', () => {
-    return videoService.listOperations();
+    const result = videoService.listOperations();
+    return {
+      data: result
+    };
   });

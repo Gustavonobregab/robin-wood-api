@@ -8,19 +8,11 @@ export const textRoutes = new Elysia({ prefix: '/text' })
 
   .post(
     '/',
-    async ({ body, userId, set }) => { // Adicionei 'set' aqui
-      try {
-        // O body já vem validado pelo schema abaixo (File, Preset, etc)
-        return await textService.stealText(userId, body);
-        
-      } catch (error: any) {
-        // Captura o status do ApiError ou usa 500 como fallback
-        set.status = error.status || 500;
-        return { 
-          error: error.message || 'Internal Server Error',
-          code: error.code || 'INTERNAL_ERROR'
-        };
-      }
+    async ({ body, userId }) => {
+      const result = await textService.stealText(userId, body);
+      return {
+        data: result
+      };
     },
     {
       body: t.Object({
@@ -47,9 +39,15 @@ export const textRoutes = new Elysia({ prefix: '/text' })
   )
 
   .get('/presets', () => {
-    return textService.listPresets();
+    const result = textService.listPresets();
+    return {
+      data: result
+    };
   })
 
   .get('/operations', () => {
-    return textService.listOperations();
+    const result = textService.listOperations();
+    return {
+      data: result
+    };
   });

@@ -8,7 +8,10 @@ export const usageRoutes = new Elysia({ prefix: '/usage' })
   .post(
     '/',
     async ({ body, userId, apiKey }) => {
-      return await usageService.recordBatch(body.events, apiKey, userId);
+      const result = await usageService.recordBatch(body.events, apiKey, userId);
+      return {
+        data: result
+      };
     },
     {
       body: t.Object({
@@ -37,17 +40,23 @@ export const usageRoutes = new Elysia({ prefix: '/usage' })
   )
 
   .get('/current', async ({ userId }) => {
-    return await usageService.getCurrentUsage(userId);
+    const result = await usageService.getCurrentUsage(userId);
+    return {
+      data: result
+    };
   })
 
   .get(
     '/history',
     async ({ query, userId }) => {
-      return await usageService.getUsageHistory(userId, {
+      const result = await usageService.getUsageHistory(userId, {
         startPeriod: query.startPeriod,
         endPeriod: query.endPeriod,
         limit: query.limit,
       });
+      return {
+        data: result
+      };
     },
     {
       query: t.Object({
@@ -59,5 +68,8 @@ export const usageRoutes = new Elysia({ prefix: '/usage' })
   )
 
   .get('/limits', async ({ userId }) => {
-    return await usageService.getUserLimits(userId);
+    const result = await usageService.getUserLimits(userId);
+    return {
+      data: result
+    };
   });

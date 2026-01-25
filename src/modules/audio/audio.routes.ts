@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { validateApiKey } from '../../middlewares/validate-api-key';
 import { audioService } from './audio.service';
-import { AudioOperationSchema } from './audio.model';
+import { AudioOperationSchema } from './audio.types';
 
 export const audioRoutes = new Elysia({ prefix: '/audio' })
   .use(validateApiKey)
@@ -9,7 +9,10 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
   .post(
     '/',
     async ({ body, userId }) => {
-      return await audioService.stealAudio(userId, body);
+      const result = await audioService.stealAudio(userId, body);
+      return {
+        data: result
+      };    
     },
     {
       body: t.Object({
@@ -31,9 +34,15 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
   )
 
   .get('/presets', () => {
-    return audioService.listPresets();
+    const result = audioService.listPresets();
+    return {
+      data: result
+    };
   })
 
   .get('/operations', () => {
-    return audioService.listOperations();
+    const result = audioService.listOperations();
+    return {
+      data: result
+    };
   })

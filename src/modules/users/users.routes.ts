@@ -10,19 +10,18 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
 
   // GET: Status do Plano Gratuito
   .get('/me/free-tier', async ({ userId }) => {
-    return await usersService.getFreeTierStatus(userId);
+    const result = await usersService.getFreeTierStatus(userId);
+    return {
+      data: result
+    };
   })
 
   // PUT: Configurar Webhook
-  .put('/webhook-config', async ({ userId, body, set }) => { // <--- Troque 'error' por 'set'
-    try {
-      return await usersService.updateWebhookUrl(userId, body.url);
-    } catch (e: any) {
-      // Define o status HTTP
-      set.status = 400;
-      // Retorna o JSON de erro
-      return { error: e.message };
-    }
+  .put('/webhook-config', async ({ userId, body }) => {
+    const result = await usersService.updateWebhookUrl(userId, body.url);
+    return {
+      data: result
+    };
   }, {
     body: t.Object({
       url: t.String({ format: 'uri' })

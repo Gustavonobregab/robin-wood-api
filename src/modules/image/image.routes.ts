@@ -9,7 +9,10 @@ export const imageRoutes = new Elysia({ prefix: '/image' })
   .post(
     '/',
     async ({ body, userId }) => {
-      return await imageService.stealImage(userId, body);
+      const result = await imageService.stealImage(userId, body);
+      return {
+        data: result
+      };
     },
     {
       body: t.Object({
@@ -31,9 +34,15 @@ export const imageRoutes = new Elysia({ prefix: '/image' })
   )
 
   .get('/presets', () => {
-    return imageService.listPresets();
+    const result = imageService.listPresets();
+    return {
+      data: result
+    };
   })
 
   .get('/operations', () => {
-    return imageService.listOperations();
+    const result = imageService.listOperations();
+    return {
+      data: result
+    };
   });
