@@ -1,17 +1,17 @@
 import { Elysia, t } from 'elysia';
 import { apiService } from './api.service';
+import { validateApiKey } from '../../middlewares/validate-api-key';
 import { AudioOperationSchema } from '../audio/audio.types';
 import { TextOperationSchema } from '../text/text.types';
 import { ImageOperationSchema } from '../image/image.model';
 import { VideoOperationSchema } from '../video/video.model';
 
 export const apiRoutes = new Elysia({ prefix: '/api' })
-  // .use(validatePublicApiKey)
+  .use(validateApiKey)
 
   .post(
     '/audio',
-    async ({ body }) => {
-      const userId = 'public-api';
+    async ({ body, userId }) => {
       const result = await apiService.processAudio(userId, body);
       return { data: result };
     },
@@ -46,8 +46,7 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
 
   .post(
     '/text',
-    async ({ body }) => {
-      const userId = 'public-api';
+    async ({ body, userId }) => {
       const result = await apiService.processText(userId, body);
       return { data: result };
     },
@@ -82,8 +81,7 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
 
   .post(
     '/image',
-    async ({ body }) => {
-      const userId = 'public-api';
+    async ({ body, userId }) => {
       const result = await apiService.processImage(userId, body);
       return { data: result };
     },
@@ -118,8 +116,7 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
 
   .post(
     '/video',
-    async ({ body }) => {
-      const userId = 'public-api';
+    async ({ body, userId }) => {
       const result = await apiService.processVideo(userId, body);
       return { data: result };
     },

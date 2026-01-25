@@ -1,9 +1,9 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/validate-api-key';
+import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
 import { usageService } from './usage.service';
 
 export const usageRoutes = new Elysia({ prefix: '/usage' })
-  .use(validateApiKey)
+  .use(validateDashboardAuth)
 
   .post(
     '/',

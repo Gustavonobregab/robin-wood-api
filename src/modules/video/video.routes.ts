@@ -1,10 +1,10 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/validate-api-key';
+import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
 import { videoService } from './video.service';
 import { VideoOperationSchema } from './video.model';
 
 export const videoRoutes = new Elysia({ prefix: '/video' })
-  .use(validateApiKey)
+  .use(validateDashboardAuth)
 
   .post(
     '/',

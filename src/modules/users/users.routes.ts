@@ -1,12 +1,9 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/validate-api-key';
-// Importe seu middleware de sessão se for diferente do de API Key
-// import { ensureSession } from '../../middlewares/ensure-session'; 
+import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
 import { usersService } from './users.service';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
-  // Aplica o middleware (garante que temos o userId)
-  .use(validateApiKey) 
+  .use(validateDashboardAuth) 
 
   // GET: Status do Plano Gratuito
   .get('/me/free-tier', async ({ userId }) => {

@@ -1,10 +1,10 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/validate-api-key';
+import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
 import { imageService } from './image.service';
 import { ImageOperationSchema } from './image.model';
 
 export const imageRoutes = new Elysia({ prefix: '/image' })
-  .use(validateApiKey)
+  .use(validateDashboardAuth)
 
   .post(
     '/',

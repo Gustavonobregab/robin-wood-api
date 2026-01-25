@@ -1,10 +1,10 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/validate-api-key';
+import { validateDashboardAuth } from '../../middlewares/validate-dashboard-auth';
 import { audioService } from './audio.service';
 import { AudioOperationSchema } from './audio.types';
 
 export const audioRoutes = new Elysia({ prefix: '/audio' })
-  .use(validateApiKey)
+  .use(validateDashboardAuth)
 
   .post(
     '/',
