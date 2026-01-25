@@ -8,13 +8,19 @@ import {
 } from './audio.types';
 import { ApiError } from '../../utils/api-error';
 import { AudioPipeline } from './audio.pipeline';
-import { usersService } from '../users/users.service';
+import { usageService } from '../usage/usage.service';
+import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
+import type { UsageSource } from '../usage/usage.types';
 import ffmpeg from 'fluent-ffmpeg';
 import { PassThrough, Readable } from 'stream';
 
 export class AudioService {
-  
-  async stealAudio(userId: string, input: StealAudioInput) {
+  async stealAudio(
+    userId: string,
+    input: StealAudioInput,
+    context?: { source?: UsageSource; apiKeyId?: string }
+  ) {
+    const startTime = Date.now();
     const { preset, operations: customOps, file } = input;
 
     if (!file) {
@@ -47,17 +53,36 @@ export class AudioService {
 
     const outputWavBuffer = await this.encodeToWav(result.data as Buffer);
 
+    const operationNames = operationsToRun.map(op => op.type);
+    const inputHash = hashInput({
+      userId,
+      pipelineType: 'audio',
+      operations: operationNames,
+      inputSize: originalBuffer.length,
+    });
+
     try {
-      await usersService.incrementFreeTierUsage(userId, 1);
+      await usageService.record({
+        idempotencyKey: generateIdempotencyKey(userId, 'audio', inputHash),
+        userId,
+        apiKeyId: context?.apiKeyId,
+        source: context?.source || 'dashboard',
+        pipelineType: 'audio',
+        operations: operationNames,
+        preset: input.preset,
+        inputBytes: originalBuffer.length,
+        outputBytes: outputWavBuffer.length,
+        processingMs: Date.now() - startTime,
+      });
     } catch (e) {
-      console.error('Billing error:', e);
+      console.error('Usage recording error:', e);
     }
 
     return {
       file: outputWavBuffer,
       filename: `processed_${Date.now()}.wav`,
       metrics: result.metrics,
-      details: result.details
+      details: result.details,
     };
   }
 

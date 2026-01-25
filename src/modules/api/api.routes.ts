@@ -11,8 +11,8 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
 
   .post(
     '/audio',
-    async ({ body, userId }) => {
-      const result = await apiService.processAudio(userId, body);
+    async ({ body, userId, apiKeyId }) => {
+      const result = await apiService.processAudio(userId, body, { source: 'api', apiKeyId });
       return { data: result };
     },
     {
@@ -46,8 +46,8 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
 
   .post(
     '/text',
-    async ({ body, userId }) => {
-      const result = await apiService.processText(userId, body);
+    async ({ body, userId, apiKeyId }) => {
+      const result = await apiService.processText(userId, body, { source: 'api', apiKeyId });
       return { data: result };
     },
     {

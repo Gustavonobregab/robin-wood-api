@@ -7,24 +7,30 @@ import {
 } from './text.types';
 import { ApiError } from '../../utils/api-error';
 import { TextPipeline, type TextResult } from './text.pipeline';
-import { usersService } from '../users/users.service';
+import { usageService } from '../usage/usage.service';
+import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
+import type { UsageSource } from '../usage/usage.types';
 
 export class TextService {
-  
-  async stealText(userId: string, input: StealTextInput): Promise<TextResult> {
+  async stealText(
+    userId: string,
+    input: StealTextInput,
+    context?: { source?: UsageSource; apiKeyId?: string }
+  ): Promise<TextResult> {
+    const startTime = Date.now();
     const { preset, operations: customOps, file } = input;
 
-    // 1. Extrair conteúdo do arquivo (Mudança principal devido ao model)
     if (!file) {
-        throw new ApiError('TEXT_INVALID_INPUT', 'File is required', 400);
+      throw new ApiError('TEXT_INVALID_INPUT', 'File is required', 400);
     }
-    const content = await file.text(); // Método nativo do objeto File/Blob no Bun
+
+    const content = await file.text();
+    const originalBytes = new TextEncoder().encode(content).length;
 
     if (!content) {
       throw new ApiError('TEXT_INVALID_INPUT', 'File content is empty', 400);
     }
 
-    // 2. Determinar operações
     if (!preset && (!customOps || customOps.length === 0)) {
       throw new ApiError(
         'TEXT_INVALID_INPUT',
@@ -33,32 +39,46 @@ export class TextService {
       );
     }
 
-    // Tipagem forçada para ajudar o TS a entender a estrutura vinda do PRESETS vs customOps
     const operationsToRun = (preset
       ? TEXT_PRESETS[preset as TextPreset].operations
       : customOps!) as TextOperation[];
 
-    // 3. Instanciar Pipeline
     const pipeline = new TextPipeline(content);
 
-    // 4. Aplicar operações (Mapeamento estrito ao Model)
     for (const op of operationsToRun) {
       if (op.type === 'syntax') {
         pipeline.syntax(op.params);
-      } 
-      else if (op.type === 'json-to-toon') {
+      } else if (op.type === 'json-to-toon') {
         pipeline.jsonToToon(op.params);
       }
     }
 
-    // 5. Executar
     const result = await pipeline.execute();
+    const outputBytes = new TextEncoder().encode(result.data).length;
 
-    // 6. Billing (Cobra 1 crédito por arquivo processado)
+    const operationNames = operationsToRun.map(op => op.type);
+    const inputHash = hashInput({
+      userId,
+      pipelineType: 'text',
+      operations: operationNames,
+      inputSize: originalBytes,
+    });
+
     try {
-      await usersService.incrementFreeTierUsage(userId, 1);
-    } catch (error) {
-      console.error('Billing error:', error);
+      await usageService.record({
+        idempotencyKey: generateIdempotencyKey(userId, 'text', inputHash),
+        userId,
+        apiKeyId: context?.apiKeyId,
+        source: context?.source || 'dashboard',
+        pipelineType: 'text',
+        operations: operationNames,
+        preset: input.preset,
+        inputBytes: originalBytes,
+        outputBytes,
+        processingMs: Date.now() - startTime,
+      });
+    } catch (e) {
+      console.error('Usage recording error:', e);
     }
 
     return result;

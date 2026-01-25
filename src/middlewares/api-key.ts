@@ -20,6 +20,7 @@ export const validateApiKey = new Elysia({ name: 'validate-api-key' })
 
     return {
       apiKey,
+      apiKeyId: keyRecord._id.toString(),
       userId: keyRecord.userId,
     };
   });

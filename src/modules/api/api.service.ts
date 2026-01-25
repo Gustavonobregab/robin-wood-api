@@ -6,10 +6,16 @@ import type { ProcessAudioData } from '../audio/audio.types';
 import type { ProcessTextData } from '../text/text.types';
 import type { StealImageInput } from '../image/image.model';
 import type { StealVideoInput } from '../video/video.model';
+import type { UsageSource } from '../usage/usage.types';
+
+interface UsageContext {
+  source: UsageSource;
+  apiKeyId?: string;
+}
 
 export class ApiService {
-  async processAudio(userId: string, data: ProcessAudioData) {
-    return audioService.stealAudio(userId, data);
+  async processAudio(userId: string, data: ProcessAudioData, context?: UsageContext) {
+    return audioService.stealAudio(userId, data, context);
   }
 
   listAudioPresets() {
@@ -20,8 +26,8 @@ export class ApiService {
     return audioService.listOperations();
   }
 
-  async processText(userId: string, data: ProcessTextData) {
-    return textService.stealText(userId, data);
+  async processText(userId: string, data: ProcessTextData, context?: UsageContext) {
+    return textService.stealText(userId, data, context);
   }
 
   listTextPresets() {
