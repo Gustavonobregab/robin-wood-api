@@ -52,7 +52,7 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
     },
     {
       body: t.Object({
-        file: t.File(),
+        text: t.String({ minLength: 1 }),
         preset: t.Optional(t.Union([
           t.Literal('chill'),
           t.Literal('medium'),

@@ -17,18 +17,13 @@ export class TextService {
     context?: { apiKeyId?: string }
   ): Promise<TextResult> {
     const startTime = Date.now();
-    const { preset, operations: customOps, file } = input;
+    const { preset, operations: customOps, text } = input;
 
-    if (!file) {
-      throw new ApiError('TEXT_INVALID_INPUT', 'File is required', 400);
+    if (!text || text.trim().length === 0) {
+      throw new ApiError('TEXT_INVALID_INPUT', 'Text is required', 400);
     }
 
-    const content = await file.text();
-    const originalBytes = new TextEncoder().encode(content).length;
-
-    if (!content) {
-      throw new ApiError('TEXT_INVALID_INPUT', 'File content is empty', 400);
-    }
+    const originalBytes = new TextEncoder().encode(text).length;
 
     if (!preset && (!customOps || customOps.length === 0)) {
       throw new ApiError(
@@ -42,7 +37,7 @@ export class TextService {
       ? TEXT_PRESETS[preset as TextPreset].operations
       : customOps!) as TextOperation[];
 
-    let pipeline = new TextPipeline(content);
+    let pipeline = new TextPipeline(text);
 
     for (const op of operationsToRun) {
       pipeline = pipeline.apply(op);

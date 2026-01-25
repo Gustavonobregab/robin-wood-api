@@ -26,13 +26,13 @@ export const TextOperationSchema = t.Union([
 export type TextOperation = Static<typeof TextOperationSchema>;
 
 export interface StealTextInput {
-  file: File;
+  text: string;
   preset?: TextPreset;
   operations?: TextOperation[];
 }
 
 export interface ProcessTextData {
-  file: File;
+  text: string;
   preset?: TextPreset;
   operations?: TextOperation[];
 }

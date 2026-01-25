@@ -16,14 +16,13 @@ export const textRoutes = new Elysia({ prefix: '/text' })
     },
     {
       body: t.Object({
-        file: t.File(), // O Elysia lida com multipart/form-data aqui
+        text: t.String({ minLength: 1 }),
         preset: t.Optional(t.Union([
           t.Literal('chill'),
           t.Literal('medium'),
           t.Literal('aggressive'),
           t.Literal('podcast'),
         ])),
-        // Validação do array de operações complexas
         operations: t.Optional(
           t.Array(TextOperationSchema, {
             minItems: 1,
@@ -32,7 +31,7 @@ export const textRoutes = new Elysia({ prefix: '/text' })
         ),
       }),
       detail: {
-        summary: 'Process text file (Steal Text)',
+        summary: 'Process text (Steal Text)',
         tags: ['Text']
       }
     }
