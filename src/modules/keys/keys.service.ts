@@ -1,5 +1,5 @@
 import { ApiKeyModel, type ApiKey } from './keys.model';
-import { ApiError } from '../../lib/api-error';
+import { ApiError } from '../../utils/api-error';
 
 export class KeysService {
   async createKey(userId: string, name: string): Promise<ApiKey> {

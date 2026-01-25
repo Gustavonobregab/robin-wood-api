@@ -12,7 +12,7 @@ import {
 import { ApiKeyModel } from '../keys/keys.model';
 import { PricingModel } from '../billing/billing.model';
 import { SubscriptionModel } from '../subscriptions/subscriptions.model';
-import { ApiError } from '../../lib/api-error';
+import { ApiError } from '../../utils/api-error';
 
 interface AggregateUpdates {
   totalOperations: number;

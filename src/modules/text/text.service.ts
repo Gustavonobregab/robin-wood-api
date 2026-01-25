@@ -4,8 +4,8 @@ import {
   type StealTextInput,
   type TextPreset,
   type TextOperation
-} from './text.model';
-import { ApiError } from '../../lib/api-error';
+} from './text.types';
+import { ApiError } from '../../utils/api-error';
 import { TextPipeline, type TextResult } from './text.pipeline';
 import { usersService } from '../users/users.service';
 

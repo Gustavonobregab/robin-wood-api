@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia';
 import { ApiKeyModel } from '../modules/keys/keys.model';
-import { ApiError } from '../lib/api-error';
+import { ApiError } from '../utils/api-error';
 
 export const validateApiKey = new Elysia({ name: 'validate-api-key' })
   .derive({ as: 'scoped' }, async ({ headers }) => {

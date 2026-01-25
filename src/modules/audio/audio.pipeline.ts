@@ -1,6 +1,6 @@
 // src/modules/audio/audio.pipeline.ts
 
-import { Pipeline, Operation } from '../../lib/pipeline';
+import { Pipeline, Operation } from '../../pipeline';
 import ffmpeg from 'fluent-ffmpeg';
 import { PassThrough, Readable } from 'stream';
 import { AudioData, AudioResult, AudioDetails, calculateMetrics } from './audio.types';

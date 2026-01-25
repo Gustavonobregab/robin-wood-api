@@ -1,10 +1,10 @@
 // src/modules/text/text.pipeline.ts
 
-import { Pipeline, Operation } from '../../lib/pipeline';
+import { Pipeline, Operation } from '../../pipeline';
 import { PipelineResult, TextDetails, calculateMetrics } from './text.types';
 
-// Importa a função de formatação do utilitário que criamos em src/lib/toon.ts
-import { encode as toonEncode } from '../../lib/toon';
+// Importa a função de formatação do utilitário que criamos em src/utils/toon.ts
+import { encode as toonEncode } from '../../utils/toon';
 
 // ==========================================
 // TYPES
@@ -121,7 +121,7 @@ async function runJsonToToon(data: TextData, params: any): Promise<TextData> {
         const indent = params.indent ?? 2;
         const compact = params.compact ?? false;
         
-        // Chama a função real importada de src/lib/toon.ts
+        // Chama a função real importada de src/utils/toon.ts
         return toonEncode(parsed, indent, compact);
 
     } catch (e) {

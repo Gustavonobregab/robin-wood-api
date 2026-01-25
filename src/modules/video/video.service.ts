@@ -4,7 +4,7 @@ import {
   type StealVideoInput,
   type VideoPreset,
 } from './video.model';
-import { ApiError } from '../../lib/api-error';
+import { ApiError } from '../../utils/api-error';
 
 export class VideoService {
   async stealVideo(userId: string, input: StealVideoInput): Promise<string> {

@@ -1,5 +1,5 @@
 import { UserModel, type User } from './users.model';
-import { ApiError } from '../../lib/api-error';
+import { ApiError } from '../../utils/api-error';
 
 const DEFAULT_FREE_TIER_LIMIT = 1000;
 

@@ -4,7 +4,7 @@ import {
   type StealImageInput,
   type ImagePreset,
 } from './image.model';
-import { ApiError } from '../../lib/api-error';
+import { ApiError } from '../../utils/api-error';
 
 export class ImageService {
   async stealImage(userId: string, input: StealImageInput): Promise<string> {
