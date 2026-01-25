@@ -2,28 +2,53 @@ import { t, type Static } from 'elysia';
 
 export type TextPreset = 'chill' | 'medium' | 'aggressive' | 'podcast';
 
+// --- OPERAÇÕES DE LIMPEZA E COMPRESSÃO ---
+
+const TrimOperation = t.Object({
+  type: t.Literal('trim'),
+  params: t.Optional(t.Object({})), 
+});
+
+const ShortenOperation = t.Object({
+  type: t.Literal('shorten'),
+  params: t.Optional(t.Object({
+    lang: t.Union([t.Literal('EN'), t.Literal('PT')])
+  }))
+});
+
+const MinifyOperation = t.Object({
+  type: t.Literal('minify'),
+  params: t.Optional(t.Object({})),
+});
+
+const CompressOperation = t.Object({
+  type: t.Literal('compress'),
+  params: t.Optional(t.Object({
+    algo: t.Union([t.Literal('gzip'), t.Literal('brotli')])
+  }))
+});
+
 const JsonToToonOperation = t.Object({
   type: t.Literal('json-to-toon'),
   params: t.Optional(t.Object({
-    indent: t.Optional(t.Number({ minimum: 0, maximum: 8 })),
+    indent: t.Optional(t.Number()),
     compact: t.Optional(t.Boolean()),
   })),
 });
 
-const SyntaxOperation = t.Object({
-  type: t.Literal('syntax'),
-  params: t.Optional(t.Object({
-    language: t.Optional(t.String()),
-    strict: t.Optional(t.Boolean()),
-  })),
-});
+// --- UNION PRINCIPAL (SEM REPLACE) ---
 
 export const TextOperationSchema = t.Union([
-  JsonToToonOperation,
-  SyntaxOperation,
+  TrimOperation,
+  ShortenOperation,
+  MinifyOperation,
+  CompressOperation,
+  JsonToToonOperation
 ]);
 
 export type TextOperation = Static<typeof TextOperationSchema>;
+
+// --- INPUTS ---
 
 export interface StealTextInput {
   text: string;
@@ -31,71 +56,13 @@ export interface StealTextInput {
   operations?: TextOperation[];
 }
 
-export interface ProcessTextData {
-  text: string;
-  preset?: TextPreset;
-  operations?: TextOperation[];
-}
-
-export const TEXT_OPERATIONS = {
-  'json-to-toon': {
-    name: 'JSON to TOON',
-    description: 'Convert JSON to TOON format',
-    params: {
-      indent: { type: 'number', min: 0, max: 8, default: 2 },
-      compact: { type: 'boolean', default: false },
-    },
-  },
-  'syntax': {
-    name: 'Syntax',
-    description: 'Validate and format syntax',
-    params: {
-      language: { type: 'string', default: 'auto' },
-      strict: { type: 'boolean', default: false },
-    },
-  },
-} as const;
-
-export const TEXT_PRESETS = {
-  chill: {
-    name: 'Chill',
-    description: 'Light processing with basic formatting',
-    operations: [
-      { type: 'syntax', params: { strict: false } },
-    ],
-  },
-  medium: {
-    name: 'Medium',
-    description: 'Balanced processing',
-    operations: [
-      { type: 'syntax', params: { strict: true } },
-    ],
-  },
-  aggressive: {
-    name: 'Aggressive',
-    description: 'Full validation and formatting',
-    operations: [
-      { type: 'syntax', params: { strict: true } },
-      { type: 'json-to-toon', params: { indent: 2, compact: false } },
-    ],
-  },
-  podcast: {
-    name: 'Podcast',
-    description: 'Optimized for transcription content',
-    operations: [
-      { type: 'syntax', params: { strict: false } },
-      { type: 'json-to-toon', params: { indent: 0, compact: true } },
-    ],
-  },
-} as const;
-
 export interface TextDetails {
   charCount: number;
   originalCharCount: number;
 }
 
 export interface Metrics {
-  compressionRatio: string; // "15.5%"
+  compressionRatio: string;
   savedChars: number;
 }
 
@@ -109,9 +76,29 @@ export interface PipelineResult<TData, TDetails> {
 export function calculateMetrics(original: number, final: number): Metrics {
   const saved = original - final;
   const ratio = original > 0 ? ((saved / original) * 100).toFixed(2) : '0.00';
-  
   return {
     savedChars: saved,
     compressionRatio: `${ratio}%`
   };
 }
+
+// --- DOCUMENTAÇÃO ---
+
+export const TEXT_OPERATIONS = {
+  'trim': { name: 'Trim', description: 'Advanced cleaning & punctuation fix', params: {} },
+  'shorten': { name: 'Shorten', description: 'Dictionary replacement (PT/EN)', params: { lang: { type: 'string', default: 'EN' } } },
+  'minify': { name: 'Minify', description: 'Aggressive compression', params: {} },
+  'compress': { name: 'Compress', description: 'Simulate Gzip/Brotli', params: { algo: { type: 'string', default: 'gzip' } } },
+  'json-to-toon': { name: 'JSON to Toon', description: 'Convert JSON blocks to TOON', params: {} }
+} as const;
+
+export const TEXT_PRESETS = {
+    aggressive: {
+        name: 'Aggressive',
+        description: 'Shorten + Minify',
+        operations: [
+            { type: 'shorten', params: { lang: 'PT' } },
+            { type: 'minify', params: {} }
+        ]
+    }
+} as any;

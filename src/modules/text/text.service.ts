@@ -73,12 +73,21 @@ export class TextService {
   }
 
   listPresets() {
-    return Object.entries(TEXT_PRESETS).map(([id, preset]) => ({
-      id,
-      name: preset.name,
-      description: preset.description,
-      operations: preset.operations.map(op => op.type),
-    }));
+    return Object.entries(TEXT_PRESETS).map(([id, val]) => {
+      // Fazemos o cast (as ...) para dizer ao TS o formato do objeto
+      const preset = val as {
+        name: string;
+        description: string;
+        operations: { type: string }[]
+      };
+
+      return {
+        id,
+        name: preset.name,
+        description: preset.description,
+        operations: preset.operations.map(op => op.type),
+      };
+    });
   }
 
   listOperations() {

@@ -1,82 +1,85 @@
-// src/modules/text/text.pipeline.ts
-
 import { Pipeline, Operation } from '../../pipeline';
 import { PipelineResult, TextDetails, calculateMetrics, TextOperation } from './text.types';
 import { ApiError } from '../../utils/api-error';
-
-// Importa a função de formatação do utilitário que criamos em src/utils/toon.ts
+import { SHORTEN_MAP_EN, SHORTEN_MAP_PT } from './text.dictionaries';
 import { encode as toonEncode } from '../../utils/toon';
-
-// ==========================================
-// TYPES
-// ==========================================
 
 export type TextData = string;
 export type TextResult = PipelineResult<string, TextDetails>;
-
-// ==========================================
-// CLASS
-// ==========================================
 
 export class TextPipeline extends Pipeline<TextData, TextResult> {
     private originalSize: number;
 
     constructor(data: TextData, ops: Operation[] = []) {
-        // Passamos a função exec ligada ao contexto this
         super('text', data, ops, (d, o) => this.exec(d, o));
         this.originalSize = data.length;
     }
 
-    /**
-     * Operação 'syntax':
-     * Realiza limpeza, normalização de espaços e validações.
-     * Mapeado para o tipo 'syntax' do model.
-     */
-    syntax(params: { language?: string; strict?: boolean } = {}): TextPipeline {
-        const pipeline = this.add('syntax', params) as TextPipeline;
+    // --- OPERAÇÕES ---
+
+    trim(): TextPipeline {
+        const pipeline = this.add('trim', {}) as TextPipeline;
         pipeline.originalSize = this.originalSize;
         return pipeline;
     }
 
-    /**
-     * Operação 'json-to-toon':
-     * Converte JSON para o formato TOON (ou customizado).
-     * Mapeado para o tipo 'json-to-toon' do model.
-     */
-    jsonToToon(params: { indent?: number; compact?: boolean } = {}): TextPipeline {
-        // Importante: O nome da operação aqui ('json-to-toon') DEVE ser idêntico ao do text.model.ts
-        const pipeline = this.add('json-to-toon', params) as TextPipeline;
+    shorten(lang: 'EN' | 'PT' = 'EN'): TextPipeline {
+        const pipeline = this.add('shorten', { lang }) as TextPipeline;
         pipeline.originalSize = this.originalSize;
         return pipeline;
     }
+
+    minify(): TextPipeline {
+        const pipeline = this.add('minify', {}) as TextPipeline;
+        pipeline.originalSize = this.originalSize;
+        return pipeline;
+    }
+
+    compress(algo: 'gzip' | 'brotli' = 'gzip'): TextPipeline {
+        const pipeline = this.add('compress', { algo }) as TextPipeline;
+        pipeline.originalSize = this.originalSize;
+        return pipeline;
+    }
+
+    jsonToToon(): TextPipeline {
+        const pipeline = this.add('json-to-toon', {}) as TextPipeline;
+        pipeline.originalSize = this.originalSize;
+        return pipeline;
+    }
+
+    // --- ROTEAMENTO ---
 
     apply(op: TextOperation): TextPipeline {
         switch (op.type) {
-            case 'syntax': {
-                return this.syntax(op.params);
-            }
-            case 'json-to-toon': {
-                return this.jsonToToon(op.params);
-            }
+            case 'trim':
+                return this.trim();
+            case 'shorten':
+                return this.shorten(op.params?.lang ?? 'EN');
+            case 'minify':
+                return this.minify();
+            case 'compress':
+                return this.compress(op.params?.algo ?? 'gzip');
+            case 'json-to-toon':
+                return this.jsonToToon();
             default:
-                throw new ApiError('TEXT_UNKNOWN_OPERATION', `Unknown operation type: ${(op as any).type}`, 400);
+                // Ignora silenciosamente ou lança erro se preferir
+                return this; 
         }
     }
 
-    // Função interna que orquestra a execução sequencial
+    // --- EXECUÇÃO ---
+
     private async exec(data: TextData, ops: Operation[]): Promise<TextResult> {
         let result = data;
         const appliedOps: string[] = [];
 
         for (const { name, params } of ops) {
-            // Executa cada passo sequencialmente
             result = await TextPipeline.run(result, name, params);
             appliedOps.push(name);
         }
 
         const finalSize = result.length;
 
-        // Retorna o objeto rico com dados e métricas
         return {
             data: result,
             metrics: calculateMetrics(this.originalSize, finalSize),
@@ -88,60 +91,110 @@ export class TextPipeline extends Pipeline<TextData, TextResult> {
         };
     }
 
-    // O "Switch" central que decide qual função auxiliar chamar
     private static async run(data: TextData, op: string, params: any): Promise<TextData> {
         switch (op) {
-            case 'syntax':
-                return runSyntax(data, params.strict);
-            
+            case 'trim':
+                return runTrim(data);
+            case 'shorten':
+                return runShorten(data, params.lang);
+            case 'minify':
+                return runMinify(data);
+            case 'compress':
+                return runCompress(data, params.algo);
             case 'json-to-toon':
-                return runJsonToToon(data, params);
-            
+                return runJsonToToon(data);
             default:
-                // Fallback: Se a operação não for reconhecida, retorna o dado intacto.
-                // Isso evita quebras se o backend receber uma operação nova que ainda não foi implementada aqui.
                 return data;
         }
     }
 }
 
 // ==========================================
-// FUNÇÕES AUXILIARES (Lógica Pura)
+// FUNÇÕES DE LÓGICA PURA
 // ==========================================
 
-async function runSyntax(data: TextData, strict: boolean = false): Promise<TextData> {
-    // 1. Normalização básica (Trim e colapso de espaços)
-    // Transforma quebras de linha e tabs em espaço simples e remove duplicatas
-    let processed = data
+async function runTrim(data: TextData): Promise<TextData> {
+    return data
         .replace(/[\r\n\t]+/g, ' ')
         .replace(/\s+/g, ' ')
+        .replace(/\s+([,.:;!?])/g, '$1') // Cola a pontuação
         .trim();
-    
-    // 2. Lógica 'Strict' (Opcional)
-    if (strict) {
-        // Exemplo: Se o texto ficar vazio após o trim, lança erro em modo estrito
-        if (processed.length === 0 && data.length > 0) {
-            throw new ApiError('TEXT_SYNTAX_ERROR', 'Content became empty after processing', 400);
-        }
-    }
-    
-    return processed;
 }
 
-async function runJsonToToon(data: TextData, params: any): Promise<TextData> {
-    try {
-        // Tenta fazer o parse do JSON. Se o texto não for JSON válido, cai no catch.
-        const parsed = JSON.parse(data);
-        
-        // Aplica os defaults definidos no model caso não venham preenchidos
-        const indent = params.indent ?? 2;
-        const compact = params.compact ?? false;
-        
-        // Chama a função real importada de src/utils/toon.ts
-        return toonEncode(parsed, indent, compact);
+async function runShorten(data: TextData, lang: 'EN' | 'PT'): Promise<TextData> {
+    const map = lang === 'PT' ? SHORTEN_MAP_PT : SHORTEN_MAP_EN;
+    let result = data;
 
-    } catch (e) {
-        // Se o input não for um JSON válido, ignoramos essa etapa e retornamos o texto original.
-        return data; 
+    for (const [original, replacement] of Object.entries(map)) {
+        // Regex estrita para não quebrar palavras
+        const regex = new RegExp(`\\b${original}\\b`, 'gi');
+        result = result.replace(regex, replacement as string);
     }
+    return result;
+}
+
+async function runMinify(data: TextData): Promise<TextData> {
+    // Minify pode ser mais agressivo no futuro, por enquanto usa o trim base
+    return runTrim(data);
+}
+
+async function runCompress(data: TextData, algo: string): Promise<TextData> {
+    // Simulação de compressão lógica
+    if (algo === 'gzip' || algo === 'brotli') {
+        return runTrim(data);
+    }
+    return data;
+}
+
+function findJsonBlocks(text: string): { start: number; end: number; json: string }[] {
+    const blocks: { start: number; end: number; json: string }[] = [];
+    let i = 0;
+    while (i < text.length) {
+        if (text[i] === '{' || text[i] === '[') {
+            const startChar = text[i];
+            const endChar = startChar === '{' ? '}' : ']';
+            let depth = 1;
+            let j = i + 1;
+            let inString = false;
+            let escape = false;
+            while (j < text.length && depth > 0) {
+                const char = text[j];
+                if (escape) escape = false;
+                else if (char === '\\') escape = true;
+                else if (char === '"') inString = !inString;
+                else if (!inString) {
+                    if (char === startChar) depth++;
+                    else if (char === endChar) depth--;
+                }
+                j++;
+            }
+            if (depth === 0) {
+                const jsonCandidate = text.slice(i, j);
+                try {
+                    JSON.parse(jsonCandidate);
+                    blocks.push({ start: i, end: j, json: jsonCandidate });
+                    i = j;
+                    continue;
+                } catch { }
+            }
+        }
+        i++;
+    }
+    return blocks;
+}
+
+async function runJsonToToon(data: TextData): Promise<TextData> {
+    const jsonBlocks = findJsonBlocks(data);
+    if (jsonBlocks.length === 0) return data;
+    
+    let result = data;
+    for (let i = jsonBlocks.length - 1; i >= 0; i--) {
+        const block = jsonBlocks[i];
+        try {
+            const parsed = JSON.parse(block.json);
+            const toon = toonEncode(parsed, 2, false); 
+            result = result.slice(0, block.start) + toon + result.slice(block.end);
+        } catch { }
+    }
+    return result;
 }
