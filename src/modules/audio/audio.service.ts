@@ -12,6 +12,9 @@ import { usageService } from '../usage/usage.service';
 import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
 import ffmpeg from 'fluent-ffmpeg';
 import { PassThrough, Readable } from 'stream';
+import { unlink } from 'node:fs/promises';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 export class AudioService {
   async stealAudio(
@@ -50,7 +53,7 @@ export class AudioService {
 
     const result = await pipeline.execute();
 
-    const outputWavBuffer = await this.encodeToWav(result.data as Buffer);
+    const outputWavBuffer = await this.encodeToMp3(result.data as Buffer);
 
     const operationNames = operationsToRun.map(op => op.type);
     
@@ -78,7 +81,7 @@ export class AudioService {
 
     return {
       file: outputWavBuffer,
-      filename: `processed_${Date.now()}.wav`,
+      filename: `processed_${Date.now()}.mp3`,
       metrics: result.metrics,
       details: result.details,
     };
@@ -102,32 +105,43 @@ export class AudioService {
     }));
   }
 
-  private decodeToRaw(inputBuffer: Buffer): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const inputStream = new Readable();
-      inputStream.push(inputBuffer);
-      inputStream.push(null);
+  private async decodeToRaw(inputBuffer: Buffer): Promise<Buffer> {
+    // Cria um caminho temporário único
+    const tempInputPath = join(tmpdir(), `robin_input_${Date.now()}_${Math.random().toString(36).slice(2)}`);
+    
+    // 1. Escreve o buffer no disco (para permitir que o FFmpeg faça 'seek' no M4A)
+    await Bun.write(tempInputPath, inputBuffer);
 
+    return new Promise((resolve, reject) => {
       const chunks: Buffer[] = [];
       const outputStream = new PassThrough();
+      
       outputStream.on('data', (c) => chunks.push(c));
 
-      ffmpeg(inputStream)
+      ffmpeg(tempInputPath) // <--- LÊ DO ARQUIVO, NÃO DO STREAM
         .noVideo()
         .audioChannels(1)
         .audioFrequency(44100)
         .format('f32le')
         .audioCodec('pcm_f32le')
-        .on('error', (err) => {
-          if (err.message.includes('Output stream closed')) return;
+        .on('error', async (err) => {
+          // Limpa o arquivo em caso de erro
+          await unlink(tempInputPath).catch(() => {}); 
+          console.error('FFmpeg Decode Error:', err);
           reject(new ApiError('PROCESSING_ERROR', `Decode failed: ${err.message}`, 500));
         })
-        .on('end', () => resolve(Buffer.concat(chunks)))
+        .on('end', async () => {
+            // Limpa o arquivo após sucesso
+            await unlink(tempInputPath).catch(() => {});
+            const result = Buffer.concat(chunks);
+            resolve(result);
+        })
         .pipe(outputStream);
     });
   }
 
-  private encodeToWav(rawPcmBuffer: Buffer): Promise<Buffer> {
+  // Substitua o antigo encodeToWav por este:
+  private encodeToMp3(rawPcmBuffer: Buffer): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const inputStream = new Readable();
       inputStream.push(rawPcmBuffer);
@@ -139,8 +153,9 @@ export class AudioService {
 
       ffmpeg(inputStream)
         .inputFormat('f32le')
-        .inputOptions(['-ar 44100', '-ac 1'])
-        .toFormat('wav')
+        .inputOptions(['-ar 44100', '-ac 1']) // Lê o RAW PCM
+        .toFormat('mp3')                      // Converte para MP3
+        .audioBitrate('128k')                 // 128kbps (Bom balanço tamanho/qualidade)
         .on('error', (err) => reject(new ApiError('PROCESSING_ERROR', `Encode failed: ${err.message}`, 500)))
         .on('end', () => resolve(Buffer.concat(chunks)))
         .pipe(outputStream);

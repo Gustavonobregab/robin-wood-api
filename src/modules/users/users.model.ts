@@ -14,7 +14,6 @@ const userSchema = new Schema<User>({
   updatedAt: { type: Date, default: Date.now },
 });
 
-userSchema.index({ oderId: 1 }, { unique: true });
 userSchema.index({ email: 1 });
 
 export const UserModel: Model<User> = model<User>('User', userSchema);

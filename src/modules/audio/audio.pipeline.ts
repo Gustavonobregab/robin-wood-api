@@ -52,7 +52,9 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
     }
 
     volume(level: number): AudioPipeline {
-        if (level < 0 || level > 2) throw new ApiError('AUDIO_INVALID_VOLUME_LEVEL', 'Volume level must be between 0 and 2', 400);
+        if (level < 0 || level > 10) { 
+            throw new ApiError('AUDIO_INVALID_VOLUME_LEVEL', 'Volume level must be between 0 and 10', 400);
+        }
 
         const pipeline = this.add('volume', { level }) as AudioPipeline;
         pipeline.originalSize = this.originalSize;
@@ -81,6 +83,10 @@ export class AudioPipeline extends Pipeline<AudioData, AudioResult> {
                 const makeupGainDb = Math.abs(threshold) / 2;
                 const linearGain = Math.pow(10, makeupGainDb / 20);
                 return this.volume(linearGain);
+            }
+            case 'speedup': {
+                const rate = op.params?.rate ?? 1.0;
+                return this.speedup(rate);
             }
             default:
                 throw new ApiError('AUDIO_UNKNOWN_OPERATION', `Unknown operation type: ${(op as any).type}`, 400);

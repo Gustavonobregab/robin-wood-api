@@ -1,30 +1,43 @@
+import { t, type Static } from 'elysia';
 import { PipelineResult } from '../../pipeline';
 
-import { t, type Static } from 'elysia';
+// 1. Adicionado 'lecture'
+export type AudioPreset = 'chill' | 'medium' | 'aggressive' | 'podcast' | 'lecture';
 
-export type AudioPreset = 'chill' | 'medium' | 'aggressive' | 'podcast';
+// --- SCHEMAS DE VALIDAÇÃO (Agora com t.Optional para evitar erro 400) ---
+
+const SpeedupOperation = t.Object({
+  type: t.Literal('speedup'),
+  params: t.Object({
+    // Rate é obrigatório para speedup
+    rate: t.Number({ minimum: 0.5, maximum: 5.0 }),
+  }),
+});
 
 const CompressOperation = t.Object({
   type: t.Literal('compress'),
   params: t.Optional(t.Object({
-    ratio: t.Number({ minimum: 1, maximum: 20 }),
-    threshold: t.Number({ minimum: -60, maximum: 0 }),
+    ratio: t.Optional(t.Number({ minimum: 1, maximum: 20 })),
+    threshold: t.Optional(t.Number({ minimum: -60, maximum: 0 })),
+    attack: t.Optional(t.Number()),
+    release: t.Optional(t.Number()),
   })),
 });
 
 const NormalizeOperation = t.Object({
   type: t.Literal('normalize'),
   params: t.Optional(t.Object({
-    targetLevel: t.Number({ minimum: -70, maximum: 0 }),
-    peakNormalize: t.Boolean(),
+    targetLevel: t.Optional(t.Number({ minimum: -70, maximum: 0 })),
+    // Correção Crítica: peakNormalize agora é opcional
+    peakNormalize: t.Optional(t.Boolean()),
   })),
 });
 
 const TrimSilenceOperation = t.Object({
   type: t.Literal('trim-silence'),
   params: t.Optional(t.Object({
-    aggressiveness: t.Number({ minimum: 0, maximum: 1 }),
-    minSilenceDuration: t.Number({ minimum: 100, maximum: 5000 }),
+    aggressiveness: t.Optional(t.Number({ minimum: 0, maximum: 1 })),
+    minSilenceDuration: t.Optional(t.Number({ minimum: 100, maximum: 5000 })),
   })),
 });
 
@@ -32,9 +45,12 @@ export const AudioOperationSchema = t.Union([
   CompressOperation,
   NormalizeOperation,
   TrimSilenceOperation,
+  SpeedupOperation,
 ]);
 
 export type AudioOperation = Static<typeof AudioOperationSchema>;
+
+// --- INTERFACES DE INPUT ---
 
 export interface StealAudioInput {
   file: File;
@@ -47,6 +63,8 @@ export interface ProcessAudioData {
   preset?: AudioPreset;
   operations?: AudioOperation[];
 }
+
+// --- CONSTANTES DE DOCUMENTAÇÃO ---
 
 export const AUDIO_OPERATIONS = {
   'trim-silence': {
@@ -75,7 +93,16 @@ export const AUDIO_OPERATIONS = {
       release: { type: 'number', min: 0, max: 1000, default: 100 },
     },
   },
+  'speedup': {
+    name: 'Speed Up',
+    description: 'Change audio speed without changing pitch',
+    params: {
+        rate: { type: 'number', min: 0.5, max: 5.0, default: 1.25 }
+    }
+  }
 } as const;
+
+// --- PRESETS (Incluindo Lecture) ---
 
 export const AUDIO_PRESETS = {
   chill: {
@@ -113,15 +140,25 @@ export const AUDIO_PRESETS = {
       { type: 'compress', params: { ratio: 4, threshold: -20, attack: 5, release: 150 } },
     ],
   },
+  // 2. Configuração do Lecture
+  lecture: {
+    name: 'Lecture Mode',
+    description: 'Trim silence + 1.5x Speed + Normalize',
+    operations: [
+      { type: 'trim-silence', params: { aggressiveness: 0.4, minSilenceDuration: 500 } },
+      { type: 'speedup', params: { rate: 1.5 } },
+      { type: 'normalize', params: { targetLevel: -14 } },
+    ],
+  },
 } as const;
 
 export type AudioData = Buffer | ArrayBuffer | Uint8Array;
 
 export interface AudioDetails {
-  duration: number;         // Em segundos
-  sampleRate: number;       // Ex: 44100
-  originalDuration: number; // Em segundos
-  silenceRemoved: number;   // Em segundos
+  duration: number;
+  sampleRate: number;
+  originalDuration: number;
+  silenceRemoved: number;
 }
 
 export type AudioResult = PipelineResult<AudioData, AudioDetails>;

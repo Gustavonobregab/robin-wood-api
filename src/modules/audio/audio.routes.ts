@@ -8,11 +8,32 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
 
   .post(
     '/',
-    async ({ body, userId }) => {
-      const result = await audioService.stealAudio(userId, body);
-      return {
-        data: result
-      };    
+    async ({ body, userId, set }) => {
+      try {
+        // Tenta processar o áudio
+        const result = await audioService.stealAudio(userId, body);
+        
+        return {
+          data: result
+        };
+
+      } catch (error: any) {
+        // --- AQUI ESTÁ A MODIFICAÇÃO PARA DEBUG ---
+        console.error("❌ ERRO CRÍTICO NO AUDIO SERVICE:", error);
+        // ------------------------------------------
+
+        // Define o status HTTP correto (400 ou 500)
+        set.status = error.status || 500;
+        
+        // Retorna o erro formatado para o cliente
+        return {
+          success: false,
+          error: {
+            code: error.code || 'INTERNAL_ERROR',
+            message: error.message || 'Internal Server Error'
+          }
+        };
+      }
     },
     {
       body: t.Object({
@@ -30,6 +51,10 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
           }),
         ),
       }),
+      detail: {
+        summary: 'Process audio file (Steal Audio)',
+        tags: ['Audio']
+      }
     }
   )
 
@@ -45,4 +70,4 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
     return {
       data: result
     };
-  })
+  });
