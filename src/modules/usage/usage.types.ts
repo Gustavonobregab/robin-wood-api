@@ -1,7 +1,6 @@
 import type { ObjectId } from 'mongoose';
 
 export type PipelineType = 'audio' | 'text' | 'image' | 'video';
-export type UsageSource = 'api' | 'dashboard';
 
 // Tokens = bytes saved (input - output)
 export interface UsageEvent {
@@ -10,11 +9,9 @@ export interface UsageEvent {
 
   userId: string;
   apiKeyId?: string;
-  source: UsageSource;
 
   pipelineType: PipelineType;
   operations: string[];
-  preset?: string;
 
   inputBytes: number;
   outputBytes: number;
@@ -28,10 +25,8 @@ export interface RecordUsageInput {
   idempotencyKey: string;
   userId: string;
   apiKeyId?: string;
-  source: UsageSource;
   pipelineType: PipelineType;
   operations: string[];
-  preset?: string;
   inputBytes: number;
   outputBytes: number;
   processingMs: number;

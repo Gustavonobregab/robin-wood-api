@@ -6,10 +6,7 @@ import type { ProcessAudioData } from '../audio/audio.types';
 import type { ProcessTextData } from '../text/text.types';
 import type { StealImageInput } from '../image/image.model';
 import type { StealVideoInput } from '../video/video.model';
-import type { UsageSource } from '../usage/usage.types';
-
 interface UsageContext {
-  source: UsageSource;
   apiKeyId?: string;
 }
 

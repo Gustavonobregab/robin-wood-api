@@ -9,13 +9,12 @@ import { ApiError } from '../../utils/api-error';
 import { TextPipeline, type TextResult } from './text.pipeline';
 import { usageService } from '../usage/usage.service';
 import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
-import type { UsageSource } from '../usage/usage.types';
 
 export class TextService {
   async stealText(
     userId: string,
     input: StealTextInput,
-    context?: { source?: UsageSource; apiKeyId?: string }
+    context?: { apiKeyId?: string }
   ): Promise<TextResult> {
     const startTime = Date.now();
     const { preset, operations: customOps, file } = input;
@@ -69,10 +68,8 @@ export class TextService {
         idempotencyKey: generateIdempotencyKey(userId, 'text', inputHash),
         userId,
         apiKeyId: context?.apiKeyId,
-        source: context?.source || 'dashboard',
         pipelineType: 'text',
         operations: operationNames,
-        preset: input.preset,
         inputBytes: originalBytes,
         outputBytes,
         processingMs: Date.now() - startTime,

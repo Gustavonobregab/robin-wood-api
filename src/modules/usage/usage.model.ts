@@ -6,11 +6,9 @@ const usageEventSchema = new Schema<UsageEvent>({
 
   userId: { type: String, required: true, index: true },
   apiKeyId: { type: String },
-  source: { type: String, enum: ['api', 'dashboard'], required: true },
 
   pipelineType: { type: String, enum: ['audio', 'text', 'image', 'video'], required: true },
   operations: { type: [String], required: true },
-  preset: { type: String },
 
   inputBytes: { type: Number, required: true },
   outputBytes: { type: Number, required: true },

@@ -10,7 +10,6 @@ import { ApiError } from '../../utils/api-error';
 import { AudioPipeline } from './audio.pipeline';
 import { usageService } from '../usage/usage.service';
 import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
-import type { UsageSource } from '../usage/usage.types';
 import ffmpeg from 'fluent-ffmpeg';
 import { PassThrough, Readable } from 'stream';
 
@@ -18,7 +17,7 @@ export class AudioService {
   async stealAudio(
     userId: string,
     input: StealAudioInput,
-    context?: { source?: UsageSource; apiKeyId?: string }
+    context?: { apiKeyId?: string }
   ) {
     const startTime = Date.now();
     const { preset, operations: customOps, file } = input;
@@ -66,10 +65,8 @@ export class AudioService {
         idempotencyKey: generateIdempotencyKey(userId, 'audio', inputHash),
         userId,
         apiKeyId: context?.apiKeyId,
-        source: context?.source || 'dashboard',
         pipelineType: 'audio',
         operations: operationNames,
-        preset: input.preset,
         inputBytes: originalBuffer.length,
         outputBytes: outputWavBuffer.length,
         processingMs: Date.now() - startTime,
