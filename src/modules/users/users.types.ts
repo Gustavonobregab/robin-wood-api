@@ -1,9 +1,12 @@
 import type { ObjectId } from 'mongoose';
 
 export interface User {
-  _id: ObjectId;
-  oderId: string;
+  _id?: ObjectId;
+  name: string;
+  oderId?: string;
   email: string;
+  emailVerified: boolean;
+  image?: string;
   webhookUrl?: string;
   tokens: {
     limit: number;

@@ -1,6 +1,8 @@
 import { Elysia } from 'elysia';
 import { connectDatabase } from './config/database';
 import { apiErrorPlugin } from './utils/api-error';
+
+// --- Módulos ---
 import { keysRoutes } from './modules/keys/keys.routes';
 import { usageRoutes } from './modules/usage/usage.routes';
 import { billingRoutes } from './modules/billing/billing.routes';
@@ -13,9 +15,22 @@ import { videoRoutes } from './modules/video/video.routes';
 import webhooksRoutes from './modules/webhooks/webhooks.routes';
 import { apiRoutes } from './modules/api/api.routes';
 
+import { authRoutes } from './auth/auth.routes';
+
+try {
+  await connectDatabase();
+  console.log('✅ Database connected');
+} catch (error) {
+  console.error('❌ Failed to connect to database:', error);
+  process.exit(1);
+}
+
 const app = new Elysia()
   .use(apiErrorPlugin)
   .get('/', () => ({ message: 'Robin Wood API' }))
+  
+  .use(authRoutes) 
+
   .use(keysRoutes)
   .use(usageRoutes)
   .use(billingRoutes)
@@ -28,15 +43,5 @@ const app = new Elysia()
   .use(videoRoutes)
   .use(apiRoutes);
 
-async function start() {
-  try {
-    await connectDatabase();
-    app.listen(3000);
-    console.log('Server is running on http://localhost:3000');
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-}
-
-start();
+app.listen(3000);
+console.log('🦊 Server is running on http://localhost:3000');
