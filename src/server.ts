@@ -14,6 +14,7 @@ import { imageRoutes } from './modules/image/image.routes';
 import { videoRoutes } from './modules/video/video.routes';
 import webhooksRoutes from './modules/webhooks/webhooks.routes';
 import { apiRoutes } from './modules/api/api.routes';
+import { cors } from '@elysiajs/cors';
 
 import { authRoutes } from './auth/auth.routes';
 
@@ -26,6 +27,12 @@ try {
 }
 
 const app = new Elysia()
+.use(cors({
+      origin: "http://localhost:3333",
+      credentials: true,
+      allowedHeaders: ['Content-Type', 'Authorization'], 
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  }))
   .use(apiErrorPlugin)
   .get('/', () => ({ message: 'Robin Wood API' }))
   
