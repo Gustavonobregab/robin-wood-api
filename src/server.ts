@@ -16,8 +16,6 @@ import webhooksRoutes from './modules/webhooks/webhooks.routes';
 import { apiRoutes } from './modules/api/api.routes';
 import { cors } from '@elysiajs/cors';
 
-import { authRoutes } from './auth/auth.routes';
-
 try {
   await connectDatabase();
   console.log('✅ Database connected');
@@ -25,6 +23,8 @@ try {
   console.error('❌ Failed to connect to database:', error);
   process.exit(1);
 }
+
+const { authRoutes } = await import('./auth/auth.routes');
 
 const app = new Elysia()
 .use(cors({
