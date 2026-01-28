@@ -1,19 +1,6 @@
 import { Elysia } from 'elysia';
 import { connectDatabase } from './config/database';
-import { apiErrorPlugin } from './utils/api-error';
-
-// --- Módulos ---
-import { keysRoutes } from './modules/keys/keys.routes';
-import { usageRoutes } from './modules/usage/usage.routes';
-import { billingRoutes } from './modules/billing/billing.routes';
-import { subscriptionsRoutes } from './modules/subscriptions/subscriptions.routes';
-import { usersRoutes } from './modules/users/users.routes';
-import { audioRoutes } from './modules/audio/audio.routes';
-import { textRoutes } from './modules/text/text.routes';
-import { imageRoutes } from './modules/image/image.routes';
-import { videoRoutes } from './modules/video/video.routes';
-import webhooksRoutes from './modules/webhooks/webhooks.routes';
-import { apiRoutes } from './modules/api/api.routes';
+//import { apiErrorPlugin } from './utils/api-error';
 import { cors } from '@elysiajs/cors';
 
 try {
@@ -25,19 +12,29 @@ try {
 }
 
 const { authRoutes } = await import('./auth/auth.routes');
+const { keysRoutes } = await import('./modules/keys/keys.routes');
+const { usageRoutes } = await import('./modules/usage/usage.routes');
+const { billingRoutes } = await import('./modules/billing/billing.routes');
+const { subscriptionsRoutes } = await import('./modules/subscriptions/subscriptions.routes');
+const { usersRoutes } = await import('./modules/users/users.routes');
+const { audioRoutes } = await import('./modules/audio/audio.routes');
+const { textRoutes } = await import('./modules/text/text.routes');
+const { imageRoutes } = await import('./modules/image/image.routes');
+const { videoRoutes } = await import('./modules/video/video.routes');
+const { default: webhooksRoutes } = await import('./modules/webhooks/webhooks.routes'); // Nota: webhooks parece ser export default
+const { apiRoutes } = await import('./modules/api/api.routes');
 
 const app = new Elysia()
-.use(cors({
+  .use(cors({
       origin: "http://localhost:3333",
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization'], 
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   }))
-  .use(apiErrorPlugin)
+  //.use(apiErrorPlugin)
+  .use(authRoutes)
   .get('/', () => ({ message: 'Robin Wood API' }))
   
-  .use(authRoutes) 
-
   .use(keysRoutes)
   .use(usageRoutes)
   .use(billingRoutes)

@@ -2,22 +2,21 @@ import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import mongoose from "mongoose";
 
-console.log("DEBUG DB STATE:", mongoose.connection.readyState);
+const googleId = process.env.GOOGLE_CLIENT_ID;
+const googleSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-const db = mongoose.connection.db;
-
-console.log("DEBUG DB STATE:", mongoose.connection.readyState);
-
-console.log("🔧 Carregando Better Auth com Trusted Origins...");
+if (!googleId || !googleSecret) {
+  console.error("🚨 ERRO CRÍTICO: As chaves do Google não foram lidas do .env!");
+}
 
 export const auth = betterAuth({
   database: mongodbAdapter(mongoose.connection.db as any),
 
-  baseURL: process.env.BETTER_AUTH_URL 
-    ? `${process.env.BETTER_AUTH_URL}/api/auth` 
-    : "http://localhost:3000/api/auth",
+  // Forçando a URL correta sem lógica complexa
+  baseURL: "http://localhost:3000/api/auth", 
+  
+  // URL do Front
   clientURL: "http://localhost:3333",
-  secret: process.env.BETTER_AUTH_SECRET,
   
   trustedOrigins: [
     "http://localhost:3333", 
@@ -26,15 +25,12 @@ export const auth = betterAuth({
 
   socialProviders: {
     google: {
-      clientId: (process.env.GOOGLE_CLIENT_ID || "").trim(),
-      clientSecret: (process.env.GOOGLE_CLIENT_SECRET || "").trim(),
+      clientId: googleId as string,
+      clientSecret: googleSecret as string,
     },
   },
 
-  emailAndPassword: {
-    enabled: false
-  },
-
+  secret: process.env.BETTER_AUTH_SECRET || "segredo_debug_123",
   
   user: {
     modelName: "users",
