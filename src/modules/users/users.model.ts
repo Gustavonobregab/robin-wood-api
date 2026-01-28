@@ -21,6 +21,4 @@ const userSchema = new Schema<User>({
   updatedAt: { type: Date, default: Date.now },
 });
 
-userSchema.index({ email: 1 });
-
 export const UserModel: Model<User> = model<User>('User', userSchema);
