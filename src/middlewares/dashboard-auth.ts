@@ -1,30 +1,24 @@
 import { Elysia } from 'elysia';
 import { ApiError } from '../utils/api-error';
-
-// TODO: Import Better Auth client when configured
-// import { auth } from '../config/auth';
+import { auth } from '../auth/better-auth'; // <--- AJUSTE O CAMINHO SE NECESSÁRIO
 
 export const validateDashboardAuth = new Elysia({ name: 'validate-dashboard-auth' })
-  .derive({ as: 'scoped' }, async ({ headers }) => {
-    // TODO: Implement Better Auth session validation
-    // const session = await auth.api.getSession({ headers });
+  .derive({ as: 'scoped' }, async ({ request }) => {
+    
+    // 1. A Mágica: O Better Auth lê os cookies do request automaticamente
+    const session = await auth.api.getSession({
+      headers: request.headers
+    });
 
-    const authHeader = headers['authorization'];
-    const sessionToken = headers['x-session-token'];
-
-    if (!authHeader && !sessionToken) {
+    // 2. Se não retornou sessão, o usuário não está logado ou o cookie expirou
+    if (!session) {
       throw new ApiError('AUTH_REQUIRED', 'Authentication is required', 401);
     }
 
-    // TODO: Replace with Better Auth session validation
-    // if (!session || !session.user) {
-    //   throw new ApiError('SESSION_INVALID', 'Invalid or expired session', 401);
-    // }
-
-    // Placeholder - replace with actual Better Auth implementation
+    // 3. Sucesso! Retornamos o userId real do banco de dados
     return {
-      userId: 'dashboard-user',
-      // user: session.user,
-      // session: session.session,
+      userId: session.user.id, // Isso agora é o ID real (ex: string do Mongo)
+      user: session.user,
+      session: session.session
     };
   });

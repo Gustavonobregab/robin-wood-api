@@ -79,6 +79,11 @@ export class UsageService {
     };
   }
 
+  async getUserStats(userId: string) {
+  const totalRequests = await UsageEventModel.countDocuments({ userId });
+  return { totalRequests };
+}
+
   async getCurrentUsage(userId: string): Promise<CurrentUsage> {
     const user = await UserModel.findOne({ oderId: userId });
 
