@@ -49,12 +49,22 @@ export const TextOperationSchema = t.Union([
 export type TextOperation = Static<typeof TextOperationSchema>;
 
 // --- INPUTS ---
+// ... (seus imports e operações existentes)
 
-export interface StealTextInput {
-  text: string;
-  preset?: TextPreset;
-  operations?: TextOperation[];
-}
+// --- INPUT SCHEMA & TYPE ---
+
+export const ProcessTextSchema = t.Object({
+  text: t.String({ minLength: 1 }),
+  preset: t.Optional(t.Union([
+    t.Literal('chill'),
+    t.Literal('medium'),
+    t.Literal('aggressive'),
+    t.Literal('podcast')
+  ])),
+  operations: t.Optional(t.Array(TextOperationSchema))
+});
+export type ProcessTextData = Static<typeof ProcessTextSchema>;
+export type StealTextInput = ProcessTextData;
 
 export interface TextDetails {
   charCount: number;
