@@ -1,11 +1,54 @@
 import { Pipeline, Operation } from '../../pipeline';
 import { PipelineResult, TextDetails, calculateMetrics, TextOperation } from './text.types';
-import { ApiError } from '../../utils/api-error';
-import { SHORTEN_MAP_EN, SHORTEN_MAP_PT } from './text.dictionaries';
+import { 
+    SHORTEN_MAP_EN, 
+    SHORTEN_MAP_PT, 
+    PHRASE_REDUCER_EN, 
+    PHRASE_REDUCER_PT 
+} from './text.dictionaries';
 import { encode as toonEncode } from '../../utils/toon';
 
 export type TextData = string;
 export type TextResult = PipelineResult<string, TextDetails>;
+
+// ==========================================
+// 🚀 ENGINE DE OTIMIZAÇÃO (MASTER REGEX)
+// ==========================================
+// Compilado apenas uma vez na inicialização do módulo para performance máxima.
+
+const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function compileMasterRegex(map: Record<string, string>): { regex: RegExp, replacer: (m: string) => string } {
+    const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+    if (keys.length === 0) {
+        return { regex: /$^/, replacer: (m) => m };
+    }
+    const pattern = `\\b(${keys.map(escapeRegExp).join('|')})\\b`;
+    const regex = new RegExp(pattern, 'gi'); 
+    
+    const replacer = (match: string) => {
+        const lower = match.toLowerCase();
+        return map[lower] || match;
+    };
+
+    return { regex, replacer };
+}
+
+// Compilação dos Motores (EN/PT)
+const ENGINE_EN = {
+    phrases: compileMasterRegex(PHRASE_REDUCER_EN),
+    words: compileMasterRegex(SHORTEN_MAP_EN)
+};
+
+const ENGINE_PT = {
+    phrases: compileMasterRegex(PHRASE_REDUCER_PT),
+    words: compileMasterRegex(SHORTEN_MAP_PT)
+};
+
+
+// ==========================================
+// CLASSE PIPELINE
+// ==========================================
 
 export class TextPipeline extends Pipeline<TextData, TextResult> {
     private originalSize: number;
@@ -62,7 +105,6 @@ export class TextPipeline extends Pipeline<TextData, TextResult> {
             case 'json-to-toon':
                 return this.jsonToToon();
             default:
-                // Ignora silenciosamente ou lança erro se preferir
                 return this; 
         }
     }
@@ -122,27 +164,27 @@ async function runTrim(data: TextData): Promise<TextData> {
 }
 
 async function runShorten(data: TextData, lang: 'EN' | 'PT'): Promise<TextData> {
-    const map = lang === 'PT' ? SHORTEN_MAP_PT : SHORTEN_MAP_EN;
+    const engine = lang === 'PT' ? ENGINE_PT : ENGINE_EN;
     let result = data;
 
-    for (const [original, replacement] of Object.entries(map)) {
-        // Regex estrita para não quebrar palavras
-        const regex = new RegExp(`\\b${original}\\b`, 'gi');
-        result = result.replace(regex, replacement as string);
-    }
+    // FASE 1: Redução Semântica de Frases (Semantic De-Bloat)
+    // Ex: "in order to" -> "to" / "venho por meio desta" -> "informo"
+    result = result.replace(engine.phrases.regex, engine.phrases.replacer);
+
+    // FASE 2: Abreviação de Palavras (Dictionary Swap)
+    // Ex: "because" -> "bc" / "você" -> "vc"
+    result = result.replace(engine.words.regex, engine.words.replacer);
+
     return result;
 }
 
 async function runMinify(data: TextData): Promise<TextData> {
-    // Minify pode ser mais agressivo no futuro, por enquanto usa o trim base
+    // Minify pode ser mais agressivo no futuro
     return runTrim(data);
 }
 
 async function runCompress(data: TextData, algo: string): Promise<TextData> {
-    // Simulação de compressão lógica
-    if (algo === 'gzip' || algo === 'brotli') {
-        return runTrim(data);
-    }
+    // Simulação de compressão lógica (Placeholder para compressão real se necessário)
     return data;
 }
 
@@ -188,6 +230,7 @@ async function runJsonToToon(data: TextData): Promise<TextData> {
     if (jsonBlocks.length === 0) return data;
     
     let result = data;
+    // Processa do fim para o início para não perder os índices
     for (let i = jsonBlocks.length - 1; i >= 0; i--) {
         const block = jsonBlocks[i];
         try {

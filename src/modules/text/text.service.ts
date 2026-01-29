@@ -11,6 +11,10 @@ import { usageService } from '../usage/usage.service';
 import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
 
 export class TextService {
+  
+  // Removemos o construtor com Regexes daqui.
+  // Agora quem cuida disso é o text.pipeline.ts internamente.
+
   async stealText(
     userId: string,
     input: StealTextInput,
@@ -37,6 +41,10 @@ export class TextService {
       ? TEXT_PRESETS[preset as TextPreset].operations
       : customOps!) as TextOperation[];
 
+    // 🔴 REMOVIDO: A lógica "FASE 1 (Pré-Pipeline)" que estava aqui.
+    // Agora passamos o texto ORIGINAL diretamente para o pipeline.
+    // Assim, ele vai calcular a diferença entre o texto GIGANTE e o PEQUENO.
+    
     let pipeline = new TextPipeline(text);
 
     for (const op of operationsToRun) {
@@ -46,6 +54,7 @@ export class TextService {
     const result = await pipeline.execute();
     const outputBytes = new TextEncoder().encode(result.data).length;
 
+    // --- Métricas e Cobrança ---
     const operationNames = operationsToRun.map(op => op.type);
     const inputHash = hashInput({
       userId,
@@ -74,7 +83,6 @@ export class TextService {
 
   listPresets() {
     return Object.entries(TEXT_PRESETS).map(([id, val]) => {
-      // Fazemos o cast (as ...) para dizer ao TS o formato do objeto
       const preset = val as {
         name: string;
         description: string;
