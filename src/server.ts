@@ -5,9 +5,9 @@ import { cors } from '@elysiajs/cors';
 
 try {
   await connectDatabase();
-  console.log('✅ Database connected');
+  console.log('Database connected');
 } catch (error) {
-  console.error('❌ Failed to connect to database:', error);
+  console.error('Failed to connect to database:', error);
   process.exit(1);
 }
 

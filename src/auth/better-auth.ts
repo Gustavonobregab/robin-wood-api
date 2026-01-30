@@ -5,17 +5,11 @@ import mongoose from "mongoose";
 const googleId = process.env.GOOGLE_CLIENT_ID;
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-if (!googleId || !googleSecret) {
-  console.error("🚨 ERRO CRÍTICO: As chaves do Google não foram lidas do .env!");
-}
-
 export const auth = betterAuth({
   database: mongodbAdapter(mongoose.connection.db as any),
 
-  // Forçando a URL correta sem lógica complexa
   baseURL: "http://localhost:3000/api/auth", 
   
-  // URL do Front
   clientURL: "http://localhost:3333",
   
   trustedOrigins: [
@@ -30,7 +24,7 @@ export const auth = betterAuth({
     },
   },
 
-  secret: process.env.BETTER_AUTH_SECRET || "segredo_debug_123",
+  secret: process.env.BETTER_AUTH_SECRET,
   
   user: {
     modelName: "users",
