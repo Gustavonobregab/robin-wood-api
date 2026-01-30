@@ -43,6 +43,7 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
           t.Literal('medium'),
           t.Literal('aggressive'),
           t.Literal('podcast'),
+          t.Literal('lecture')
         ])),
         operations: t.Optional(
           t.Array(AudioOperationSchema, {
