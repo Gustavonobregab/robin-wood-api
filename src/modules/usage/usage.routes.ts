@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia';
+import { Elysia, t } from 'elysia';
 import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { usageService } from './usage.service';
 
@@ -8,6 +8,17 @@ export const usageRoutes = new Elysia({ prefix: '/usage' })
   .get('/current', async ({ userId }) => {
     const result = await usageService.getCurrentUsage(userId);
     return { data: result };
+  })
+
+  // 👇 NOVA ROTA: Analítica para o Gráfico e Stats
+  .get('/analytics', async ({ userId, query }) => {
+    const range = (query.range || '30d') as '7d' | '30d' | '90d' | '1y';
+    const result = await usageService.getAnalytics(userId, range);
+    return { data: result };
+  }, {
+    query: t.Object({
+      range: t.Optional(t.String())
+    })
   })
 
   .get('/limits', async ({ userId }) => {

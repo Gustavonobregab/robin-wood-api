@@ -54,3 +54,32 @@ export interface CurrentUsage {
 
 // Default free tier (500MB)
 export const DEFAULT_TOKENS_LIMIT = 500_000_000;
+
+// --- NOVOS TIPOS PARA ANALÍTICA (DASHBOARD) ---
+
+export type TimeRange = '7d' | '30d' | '90d' | '1y';
+
+export interface UsageAnalytics {
+  stats: {
+    totalRequests: number;
+    tokensSaved: number;
+    tokensUsed: number;
+  };
+  chart: {
+    date: string; // Formato "DD/MM"
+    requests: number;
+  }[];
+  breakdown: {
+    type: string; // 'Text', 'Audio', etc.
+    count: number;
+    percentage: number;
+  }[];
+  recent: {
+    id: string;
+    type: string;
+    status: string; // 'success' | 'error'
+    size: string;   // Ex: "2KB -> 1KB"
+    latency: string; // Ex: "120ms"
+    timestamp: string; // Data formatada
+  }[];
+}
