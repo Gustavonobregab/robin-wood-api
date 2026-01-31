@@ -1,26 +1,24 @@
 import { UsageEventModel } from './usage.model';
 import { UserModel } from '../users/users.model';
 import { ApiError } from '../../utils/api-error';
-import { subDays, format } from 'date-fns'; // 👈 Import necessário
+import { subDays, format } from 'date-fns';
 import type {
   RecordUsageInput,
   RecordUsageResult,
   UsageLimits,
   CurrentUsage,
-  TimeRange,     // 👈 Certifique-se que adicionou isso no usage.types.ts
-  UsageAnalytics // 👈 Certifique-se que adicionou isso no usage.types.ts
+  TimeRange,
+  UsageAnalytics
 } from './usage.types';
 
 export class UsageService {
-  
-  // ... (Mantenha o método record existente igual) ...
   async record(input: RecordUsageInput): Promise<RecordUsageResult> {
     const existingEvent = await UsageEventModel.findOne({
       idempotencyKey: input.idempotencyKey,
     });
 
     if (existingEvent) {
-      const user = await UserModel.findOne({ oderId: input.userId });
+      const user = await UserModel.findOne({ _id: input.userId });
       if (!user) throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
       return {
         eventId: existingEvent._id.toString(),
@@ -45,7 +43,7 @@ export class UsageService {
     });
 
     const user = await UserModel.findOneAndUpdate(
-      { oderId: input.userId },
+      { _id: input.userId },
       { $inc: { 'tokens.used': tokensSaved } },
       { new: true }
     );
@@ -59,9 +57,7 @@ export class UsageService {
     };
   }
 
-  // 👇 NOVO MÉTODO: Lógica de Analítica
   async getAnalytics(userId: string, range: TimeRange = '30d'): Promise<UsageAnalytics> {
-    // 1. Calcular Data de Início
     const now = new Date();
     let startDate = subDays(now, 30);
     
@@ -69,20 +65,17 @@ export class UsageService {
     if (range === '90d') startDate = subDays(now, 90);
     if (range === '1y') startDate = subDays(now, 365);
 
-    // 2. Buscar Eventos no Range
     const events = await UsageEventModel.find({
       userId,
       timestamp: { $gte: startDate }
     }).sort({ timestamp: -1 }).lean();
 
-    // 3. Stats Gerais
     const totalRequests = events.length;
     const tokensSaved = events.reduce((acc, curr) => acc + (curr.tokensSaved || 0), 0);
     
-    const user = await UserModel.findOne({ oderId: userId }).lean();
+    const user = await UserModel.findOne({ _id: userId }).lean();
     const tokensUsed = user?.tokens?.used || 0;
 
-    // 4. Breakdown (Porcentagem por Tipo)
     const typeCounts: Record<string, number> = {};
     events.forEach(e => {
       const type = e.pipelineType || 'unknown';
@@ -95,17 +88,14 @@ export class UsageService {
       percentage: totalRequests > 0 ? Number(((count / totalRequests) * 100).toFixed(1)) : 0
     })).sort((a, b) => b.count - a.count);
 
-    // 5. Gráfico (Agrupado por Dia)
     const chartMap = new Map<string, number>();
     
-    // Preenche dias vazios com 0
     let loopDate = new Date(startDate);
     while (loopDate <= now) {
       chartMap.set(format(loopDate, 'dd/MM'), 0);
       loopDate.setDate(loopDate.getDate() + 1);
     }
 
-    // Preenche com dados
     events.forEach(e => {
       const key = format(new Date(e.timestamp), 'dd/MM');
       if (chartMap.has(key)) {
@@ -118,7 +108,6 @@ export class UsageService {
       requests
     }));
 
-    // 6. Recentes (Últimos 5)
     const recent = events.slice(0, 5).map(e => ({
       id: e._id.toString(),
       type: e.pipelineType ? e.pipelineType.charAt(0).toUpperCase() + e.pipelineType.slice(1) : 'Unknown',
@@ -138,10 +127,8 @@ export class UsageService {
     };
   }
 
-  // ... (Mantenha checkLimits e getCurrentUsage igual) ...
-
   async checkLimits(userId: string): Promise<UsageLimits> {
-    const user = await UserModel.findOne({ oderId: userId });
+    const user = await UserModel.findOne({ _id: userId });
     if (!user) throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
 
     const tokensRemaining = Math.max(0, user.tokens.limit - user.tokens.used);
@@ -162,7 +149,7 @@ export class UsageService {
   }
 
   async getCurrentUsage(userId: string): Promise<CurrentUsage> {
-    const user = await UserModel.findOne({ oderId: userId });
+    const user = await UserModel.findOne({ _id: userId });
     if (!user) throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
 
     return {
