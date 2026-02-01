@@ -28,13 +28,12 @@ const app = new Elysia()
   .use(cors({
       origin: "http://localhost:3333",
       credentials: true,
-      allowedHeaders: ['Content-Type', 'Authorization'], 
+      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'], 
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   }))
   //.use(apiErrorPlugin)
   .use(authRoutes)
   .get('/', () => ({ message: 'Robin Wood API' }))
-  
   .use(keysRoutes)
   .use(usageRoutes)
   .use(billingRoutes)
