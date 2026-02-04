@@ -44,7 +44,12 @@ const app = new Elysia()
   .use(textRoutes)
   .use(imageRoutes)
   .use(videoRoutes)
-  .use(apiRoutes);
+  .use(apiRoutes).get('/health', () => {
+    return { 
+      status: 'online', 
+      uptime: process.uptime() 
+    };
+  });
 
 app.listen(3000);
 console.log('🦊 Server is running on http://localhost:3000');
