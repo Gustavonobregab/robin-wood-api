@@ -30,7 +30,12 @@ const app = new Elysia()
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'], 
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-  }))
+  })).get('/health', () => {
+    return { 
+      status: 'online', 
+      uptime: process.uptime() 
+    };
+  })
   //.use(apiErrorPlugin)
   .use(authRoutes)
   .get('/', () => ({ message: 'Robin Wood API' }))
@@ -44,12 +49,7 @@ const app = new Elysia()
   .use(textRoutes)
   .use(imageRoutes)
   .use(videoRoutes)
-  .use(apiRoutes).get('/health', () => {
-    return { 
-      status: 'online', 
-      uptime: process.uptime() 
-    };
-  });
+  .use(apiRoutes);
 
 app.listen(3000);
 console.log('🦊 Server is running on http://localhost:3000');
