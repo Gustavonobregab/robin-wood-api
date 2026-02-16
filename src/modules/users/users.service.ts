@@ -1,48 +1,55 @@
 import { UserModel } from './users.model';
-import type { User } from './users.types';
 import { ApiError } from '../../utils/api-error';
-import { DEFAULT_TOKENS_LIMIT } from '../usage/usage.types';
+import { usageService } from '../usage/usage.service';
 
 export class UsersService {
-  async getOrCreateUser(oderId: string, email: string): Promise<User> {
-    const existingUser = await UserModel.findOne({ oderId });
+  async getProfile(userId: string) {
+    const user = await UserModel.findOne({
+      $or: [{ oderId: userId }, { _id: userId }],
+    }).lean();
 
-    if (existingUser) {
-      return existingUser;
+    if (!user) {
+      throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
     }
 
-    return UserModel.create({
-      oderId,
-      email,
-      tokens: {
-        limit: DEFAULT_TOKENS_LIMIT,
-        used: 0,
-      },
-    });
+    const stats = await usageService.getUserStats(userId);
+
+    return {
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      createdAt: user.createdAt,
+      totalRequests: stats.totalRequests,
+      tokensUsed: user.tokens?.used,
+      tokensLimit: user.tokens?.limit,
+    };
   }
 
-  async getUserByOderId(oderId: string): Promise<User | null> {
-    return UserModel.findOne({ oderId });
-  }
-
-  async updateWebhookUrl(oderId: string, url: string): Promise<{ message: string; webhookUrl: string }> {
-    try {
-      new URL(url);
-    } catch {
-      throw new ApiError('INVALID_INPUT', 'Invalid URL format', 400);
-    }
-
+  async updateProfile(userId: string, data: { name: string }) {
     const user = await UserModel.findOneAndUpdate(
-      { oderId },
-      { $set: { webhookUrl: url, updatedAt: new Date() } },
-      { new: true }
+      { $or: [{ oderId: userId }, { _id: userId }] },
+      { $set: { name: data.name } },
+      { new: true },
     );
 
     if (!user) {
       throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
     }
 
-    return { message: 'Webhook URL configured successfully', webhookUrl: user.webhookUrl! };
+    return user;
+  }
+
+  async updateWebhookUrl(userId: string, url: string) {
+    const user = await UserModel.findOneAndUpdate(
+      { $or: [{ oderId: userId }, { _id: userId }] },
+      { $set: { webhookUrl: url } },
+      { new: true },
+    );
+
+    if (!user) {
+      throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
+    }
+    return { webhookUrl: user.webhookUrl! };
   }
 }
 
