@@ -1,114 +1,122 @@
 import { t, type Static } from 'elysia';
 
-export type TextPreset = 'chill' | 'medium' | 'aggressive' | 'podcast';
 
-// --- OPERAÇÕES DE LIMPEZA E COMPRESSÃO ---
+export const TEXT_OPERATIONS = {
+  'trim': {
+    name: 'Trim',
+    description: 'Advanced cleaning & punctuation fix',
+    params: {
+      intensity: { type: 'number', min: 0, max: 100, default: 50 },
+    },
+  },
+  'shorten': {
+    name: 'Shorten',
+    description: 'Dictionary replacement (PT/EN)',
+    params: {
+      lang: { type: 'string', default: 'EN' },
+      intensity: { type: 'number', min: 0, max: 100, default: 50 },
+    },
+  },
+  'minify': {
+    name: 'Minify',
+    description: 'Aggressive compression',
+    params: {
+      intensity: { type: 'number', min: 0, max: 100, default: 50 },
+    },
+  },
+  'compress': {
+    name: 'Compress',
+    description: 'Simulate Gzip/Brotli',
+    params: {
+      algo: { type: 'string', default: 'gzip' },
+      intensity: { type: 'number', min: 0, max: 100, default: 50 },
+    },
+  },
+  'json-to-toon': {
+    name: 'JSON to Toon',
+    description: 'Convert JSON blocks to TOON',
+    params: {
+      intensity: { type: 'number', min: 0, max: 100, default: 50 },
+    },
+  },
+} as const;
 
-const TrimOperation = t.Object({
-  type: t.Literal('trim'),
-  params: t.Optional(t.Object({})), 
-});
+export type TextOperationType = keyof typeof TEXT_OPERATIONS;
 
-const ShortenOperation = t.Object({
-  type: t.Literal('shorten'),
-  params: t.Optional(t.Object({
-    lang: t.Union([t.Literal('EN'), t.Literal('PT')])
-  }))
-});
+export const TEXT_PRESETS = {
+  chill: {
+    name: 'Chill',
+    description: 'Light cleanup, just trim whitespace',
+    operations: [
+      { type: 'trim', params: { intensity: 30 } },
+    ],
+  },
+  medium: {
+    name: 'Medium',
+    description: 'Trim + Shorten for balanced compression',
+    operations: [
+      { type: 'trim', params: { intensity: 50 } },
+      { type: 'shorten', params: { lang: 'EN', intensity: 50 } },
+    ],
+  },
+  aggressive: {
+    name: 'Aggressive',
+    description: 'Shorten + Minify for maximum compression',
+    operations: [
+      { type: 'shorten', params: { lang: 'PT', intensity: 80 } },
+      { type: 'minify', params: { intensity: 80 } },
+    ],
+  },
+} as const;
 
-const MinifyOperation = t.Object({
-  type: t.Literal('minify'),
-  params: t.Optional(t.Object({})),
-});
+export type TextPreset = keyof typeof TEXT_PRESETS;
 
-const CompressOperation = t.Object({
-  type: t.Literal('compress'),
-  params: t.Optional(t.Object({
-    algo: t.Union([t.Literal('gzip'), t.Literal('brotli')])
-  }))
-});
-
-const JsonToToonOperation = t.Object({
-  type: t.Literal('json-to-toon'),
-  params: t.Optional(t.Object({
-    indent: t.Optional(t.Number()),
-    compact: t.Optional(t.Boolean()),
-  })),
-});
-
-// --- UNION PRINCIPAL (SEM REPLACE) ---
 
 export const TextOperationSchema = t.Union([
-  TrimOperation,
-  ShortenOperation,
-  MinifyOperation,
-  CompressOperation,
-  JsonToToonOperation
+  t.Object({
+    type: t.Literal('trim'),
+    params: t.Optional(t.Object({
+      intensity: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+    })),
+  }),
+  t.Object({
+    type: t.Literal('shorten'),
+    params: t.Optional(t.Object({
+      lang: t.Optional(t.Union([t.Literal('EN'), t.Literal('PT')])),
+      intensity: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+    })),
+  }),
+  t.Object({
+    type: t.Literal('minify'),
+    params: t.Optional(t.Object({
+      intensity: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+    })),
+  }),
+  t.Object({
+    type: t.Literal('compress'),
+    params: t.Optional(t.Object({
+      algo: t.Optional(t.Union([t.Literal('gzip'), t.Literal('brotli')])),
+      intensity: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+    })),
+  }),
+  t.Object({
+    type: t.Literal('json-to-toon'),
+    params: t.Optional(t.Object({
+      intensity: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+    })),
+  }),
 ]);
 
 export type TextOperation = Static<typeof TextOperationSchema>;
 
-// --- INPUTS ---
-// ... (seus imports e operações existentes)
+export const TextPresetSchema = t.Union([
+  t.Literal('chill'),
+  t.Literal('medium'),
+  t.Literal('aggressive'),
+]);
 
-// --- INPUT SCHEMA & TYPE ---
-
-export const ProcessTextSchema = t.Object({
-  text: t.String({ minLength: 1 }),
-  preset: t.Optional(t.Union([
-    t.Literal('chill'),
-    t.Literal('medium'),
-    t.Literal('aggressive'),
-    t.Literal('podcast')
-  ])),
-  operations: t.Optional(t.Array(TextOperationSchema))
-});
-export type ProcessTextData = Static<typeof ProcessTextSchema>;
-export type StealTextInput = ProcessTextData;
-
-export interface TextDetails {
-  charCount: number;
-  originalCharCount: number;
+export interface ProcessTextInput {
+  textUrl: string;
+  preset?: TextPreset;
+  operations?: TextOperation[];
 }
-
-export interface Metrics {
-  compressionRatio: string;
-  savedChars: number;
-}
-
-export interface PipelineResult<TData, TDetails> {
-  data: TData;
-  metrics: Metrics;
-  details: TDetails;
-  operations: string[];
-}
-
-export function calculateMetrics(original: number, final: number): Metrics {
-  const saved = original - final;
-  const ratio = original > 0 ? ((saved / original) * 100).toFixed(2) : '0.00';
-  return {
-    savedChars: saved,
-    compressionRatio: `${ratio}%`
-  };
-}
-
-// --- DOCUMENTAÇÃO ---
-
-export const TEXT_OPERATIONS = {
-  'trim': { name: 'Trim', description: 'Advanced cleaning & punctuation fix', params: {} },
-  'shorten': { name: 'Shorten', description: 'Dictionary replacement (PT/EN)', params: { lang: { type: 'string', default: 'EN' } } },
-  'minify': { name: 'Minify', description: 'Aggressive compression', params: {} },
-  'compress': { name: 'Compress', description: 'Simulate Gzip/Brotli', params: { algo: { type: 'string', default: 'gzip' } } },
-  'json-to-toon': { name: 'JSON to Toon', description: 'Convert JSON blocks to TOON', params: {} }
-} as const;
-
-export const TEXT_PRESETS = {
-    aggressive: {
-        name: 'Aggressive',
-        description: 'Shorten + Minify',
-        operations: [
-            { type: 'shorten', params: { lang: 'PT' } },
-            { type: 'minify', params: {} }
-        ]
-    }
-} as any;

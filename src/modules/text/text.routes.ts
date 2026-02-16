@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
 import { textService } from './text.service';
-import { TextOperationSchema } from './text.types';
+import { TextOperationSchema, TextPresetSchema } from './text.types';
 
 export const textRoutes = new Elysia({ prefix: '/text' })
   .use(validateDashboardAuth)
@@ -9,44 +9,39 @@ export const textRoutes = new Elysia({ prefix: '/text' })
   .post(
     '/',
     async ({ body, userId }) => {
-      const result = await textService.stealText(userId, body);
+      const { job } = await textService.processText(userId, body);
       return {
-        data: result
+        data: job,
       };
     },
     {
       body: t.Object({
-        text: t.String({ minLength: 1 }),
-        preset: t.Optional(t.Union([
-          t.Literal('chill'),
-          t.Literal('medium'),
-          t.Literal('aggressive'),
-          t.Literal('podcast'),
-        ])),
+        textUrl: t.String({ format: 'uri' }),
+        preset: t.Optional(TextPresetSchema),
         operations: t.Optional(
           t.Array(TextOperationSchema, {
             minItems: 1,
             maxItems: 10,
-          }),
+          })
         ),
       }),
       detail: {
-        summary: 'Process text (Steal Text)',
-        tags: ['Text']
-      }
+        summary: 'Create text processing job',
+        tags: ['Text'],
+      },
     }
   )
 
   .get('/presets', () => {
     const result = textService.listPresets();
     return {
-      data: result
+      data: result,
     };
   })
 
   .get('/operations', () => {
     const result = textService.listOperations();
     return {
-      data: result
+      data: result,
     };
   });

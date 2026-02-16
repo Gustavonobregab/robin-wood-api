@@ -1,101 +1,59 @@
 import {
   TEXT_PRESETS,
   TEXT_OPERATIONS,
-  type StealTextInput,
+  type ProcessTextInput,
   type TextPreset,
-  type TextOperation
+  type TextOperation,
 } from './text.types';
 import { ApiError } from '../../utils/api-error';
-import { TextPipeline, type TextResult } from './text.pipeline';
-import { usageService } from '../usage/usage.service';
-import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
+import type { Job } from '../jobs/job.types';
 
 export class TextService {
-  
-  // Removemos o construtor com Regexes daqui.
-  // Agora quem cuida disso é o text.pipeline.ts internamente.
 
-  async stealText(
+  async processText(
     userId: string,
-    input: StealTextInput,
-    context?: { apiKeyId?: string }
-  ): Promise<TextResult> {
-    const startTime = Date.now();
-    const { preset, operations: customOps, text } = input;
-
-    if (!text || text.trim().length === 0) {
-      throw new ApiError('TEXT_INVALID_INPUT', 'Text is required', 400);
-    }
-
-    const originalBytes = new TextEncoder().encode(text).length;
+    input: ProcessTextInput
+  ): Promise<{ job: Job }> {
+    const { preset, operations: customOps, textUrl } = input;
 
     if (!preset && (!customOps || customOps.length === 0)) {
       throw new ApiError(
         'TEXT_INVALID_INPUT',
         'Either preset or operations must be provided',
-        400,
+        400
       );
     }
 
-    const operationsToRun = (preset
-      ? TEXT_PRESETS[preset as TextPreset].operations
-      : customOps!) as TextOperation[];
+    const operations = this.resolveOperations(preset, customOps);
 
-    // 🔴 REMOVIDO: A lógica "FASE 1 (Pré-Pipeline)" que estava aqui.
-    // Agora passamos o texto ORIGINAL diretamente para o pipeline.
-    // Assim, ele vai calcular a diferença entre o texto GIGANTE e o PEQUENO.
-    
-    let pipeline = new TextPipeline(text);
+    //TODO: ENQUEUE JOB HERE
+    const job = { id: '123', userId, status: 'pending', payload: { type: 'text', operations, textUrl }, createdAt: new Date() } as unknown as Job;
+    return { job };
+  }
 
-    for (const op of operationsToRun) {
-      pipeline = pipeline.apply(op);
+  private resolveOperations(
+    preset?: TextPreset,
+    customOps?: TextOperation[]
+  ): TextOperation[] {
+    if (preset) {
+      const presetConfig = TEXT_PRESETS[preset];
+
+      if (!presetConfig) {
+        throw new ApiError('TEXT_INVALID_PRESET', `Unknown preset: ${preset}`, 400);
+      }
+      return presetConfig.operations as unknown as TextOperation[];
     }
 
-    const result = await pipeline.execute();
-    const outputBytes = new TextEncoder().encode(result.data).length;
-
-    // --- Métricas e Cobrança ---
-    const operationNames = operationsToRun.map(op => op.type);
-    const inputHash = hashInput({
-      userId,
-      pipelineType: 'text',
-      operations: operationNames,
-      inputSize: originalBytes,
-    });
-
-    try {
-      await usageService.record({
-        idempotencyKey: generateIdempotencyKey(userId, 'text', inputHash),
-        userId,
-        apiKeyId: context?.apiKeyId,
-        pipelineType: 'text',
-        operations: operationNames,
-        inputBytes: originalBytes,
-        outputBytes,
-        processingMs: Date.now() - startTime,
-      });
-    } catch (e) {
-      console.error('Usage recording error:', e);
-    }
-
-    return result;
+    return customOps!;
   }
 
   listPresets() {
-    return Object.entries(TEXT_PRESETS).map(([id, val]) => {
-      const preset = val as {
-        name: string;
-        description: string;
-        operations: { type: string }[]
-      };
-
-      return {
-        id,
-        name: preset.name,
-        description: preset.description,
-        operations: preset.operations.map(op => op.type),
-      };
-    });
+    return Object.entries(TEXT_PRESETS).map(([id, preset]) => ({
+      id,
+      name: preset.name,
+      description: preset.description,
+      operations: preset.operations.map((op) => op.type),
+    }));
   }
 
   listOperations() {
