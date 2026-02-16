@@ -1,16 +1,16 @@
 import { Elysia, t } from 'elysia';
-import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
+import { validateApiKey } from '../../middlewares/api-key';
 import { usersService } from './users.service';
 import { usageService } from '../usage/usage.service';
 import { UserModel } from './users.model';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
-  .use(validateDashboardAuth)
+  .use(validateApiKey)
 
   // --- GET /me: Traz perfil + estatísticas ---
   .get('/me', async ({ userId }) => {
     // Busca pelo oderId ou _id, dependendo de como o middleware popula o userId
-    // Assumindo que o validateDashboardAuth retorna o ID correto
+    // Assumindo que o validateApiKey retorna o ID correto
     const user = await UserModel.findOne({ 
       $or: [{ oderId: userId }, { _id: userId }] 
     }).lean();

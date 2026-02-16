@@ -17,7 +17,6 @@ export const validateApiKey = new Elysia({ name: 'validate-api-key' })
     }
 
     //TODO : VALIDATE USAGE 
-
     await ApiKeyModel.updateOne({ _id: keyRecord._id }, { lastUsedAt: new Date() });
 
     return {

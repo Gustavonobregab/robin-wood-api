@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { keysService } from './keys.service';
-import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
+import { validateApiKey } from '../../middlewares/api-key';
 
 export const keysRoutes = new Elysia({ prefix: '/keys' })
   .post(
@@ -13,7 +13,7 @@ export const keysRoutes = new Elysia({ prefix: '/keys' })
       body: t.Object({ apiKey: t.String({ minLength: 1 }) }),
     }
   )
-  .use(validateDashboardAuth)
+  .use(validateApiKey)
   .get('/', async ({ userId }) => {
     const keys = await keysService.getKeysByUserId(userId);
     return { data: { keys } };

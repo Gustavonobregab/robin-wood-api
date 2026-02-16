@@ -1,10 +1,10 @@
 import { Elysia, t } from 'elysia';
-import { validateDashboardAuth } from '../../middlewares/dashboard-auth';
+import { validateApiKey } from '../../middlewares/api-key';
 import { textService } from './text.service';
 import { TextOperationSchema, TextPresetSchema } from './text.types';
 
 export const textRoutes = new Elysia({ prefix: '/text' })
-  .use(validateDashboardAuth)
+  .use(validateApiKey)
 
   .post(
     '/',
