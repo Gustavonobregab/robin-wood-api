@@ -29,12 +29,10 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
         email: user.email,
         image: user.image,
         createdAt: user.createdAt,
-        stats: {
-          totalRequests: stats.totalRequests,
-          tokensUsed: user.tokens?.used || 0,
-          tokensLimit: user.tokens?.limit || 0
-        }
-      }
+        totalRequests: stats.totalRequests,
+        tokensUsed: user.tokens?.used || 0,
+        tokensLimit: user.tokens?.limit || 0,
+      },
     };
   })
 

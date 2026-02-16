@@ -16,18 +16,14 @@ export const keysRoutes = new Elysia({ prefix: '/keys' })
   .use(validateApiKey)
   .get('/', async ({ userId }) => {
     const keys = await keysService.getKeysByUserId(userId);
-    return { data: { keys } };
+    return { data: keys };
   })
   .post(
     '/',
     async ({ userId, body }) => {
       const apiKey = await keysService.createKey(userId, body.name);
 
-      return {
-        data: {
-          key: apiKey,
-        }
-      };
+      return { data: apiKey };
     },
     {
       body: t.Object({ name: t.String({ minLength: 1, maxLength: 50 }) }),
@@ -37,7 +33,7 @@ export const keysRoutes = new Elysia({ prefix: '/keys' })
     '/:id',
     async ({ userId, params }) => {
       const key = await keysService.getKeyById(userId, params.id);
-      return { data: { key } };
+      return { data: key };
     },
     {
       params: t.Object({ id: t.String() }),
@@ -47,7 +43,7 @@ export const keysRoutes = new Elysia({ prefix: '/keys' })
     '/:id',
     async ({ userId, params }) => {
       await keysService.revokeKey(userId, params.id);
-      return { data: { message: 'API key revoked successfully' } };
+      return { data: { revoked: true } };
     },
     {
       params: t.Object({ id: t.String() }),
