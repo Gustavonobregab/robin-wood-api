@@ -6,14 +6,12 @@ import {
   type AudioOperation,
 } from './audio.types';
 import { ApiError } from '../../utils/api-error';
+import { jobService } from '../jobs/job.service';
 import type { Job } from '../jobs/job.types';
 
 export class AudioService {
 
-  async processAudio(
-    userId: string,
-    input: ProcessAudioInput
-  ): Promise<{ job: Job }> {
+  async processAudio( userId: string, input: ProcessAudioInput): Promise<{ job: Job }> {
     const { preset, operations: customOps, audioUrl } = input;
 
     if (!preset && (!customOps || customOps.length === 0)) {
@@ -26,8 +24,15 @@ export class AudioService {
 
     const operations = this.resolveOperations(preset, customOps);
 
-    //TODO: ENQUEUE JOB HERE
-    const job = { id: '123', userId, status: 'pending', payload: { type: 'audio', operations, audioUrl }, createdAt: new Date() } as unknown as Job;
+    const job = await jobService.create({ userId,
+     payload:
+     { type: 'audio',
+       preset,
+       operations,
+       source: { kind: 'url', url: audioUrl },
+       name: audioUrl,
+     } });
+
     return { job };
   }
 

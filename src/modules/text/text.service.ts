@@ -6,6 +6,7 @@ import {
   type TextOperation,
 } from './text.types';
 import { ApiError } from '../../utils/api-error';
+import { jobService } from '../jobs/job.service';
 import type { Job } from '../jobs/job.types';
 
 export class TextService {
@@ -26,8 +27,15 @@ export class TextService {
 
     const operations = this.resolveOperations(preset, customOps);
 
-    //TODO: ENQUEUE JOB HERE
-    const job = { id: '123', userId, status: 'pending', payload: { type: 'text', operations, textUrl }, createdAt: new Date() } as unknown as Job;
+    const job = await jobService.create({ 
+      userId,
+       payload:
+       { type: 'text',
+         preset,
+         operations,
+         source: { kind: 'url', url: textUrl },
+       }});
+       
     return { job };
   }
 
