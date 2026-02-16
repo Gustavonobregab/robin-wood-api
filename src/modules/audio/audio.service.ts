@@ -1,4 +1,3 @@
-
 import {
   AUDIO_PRESETS,
   type StealAudioInput,
@@ -7,22 +6,15 @@ import {
   type AudioOperation,
 } from './audio.types';
 import { ApiError } from '../../utils/api-error';
-import { AudioPipeline } from './audio.pipeline';
-import { usageService } from '../usage/usage.service';
-import { generateIdempotencyKey, hashInput } from '../../utils/idempotency';
-import ffmpeg from 'fluent-ffmpeg';
-import { PassThrough, Readable } from 'stream';
-import { unlink } from 'node:fs/promises';
-import { join } from 'path';
-import { tmpdir } from 'os';
+import { jobService } from '../jobs/job.service';
+import type { Job } from '../jobs/job.types';
 
 export class AudioService {
-  async stealAudio(
+  
+  async createAudioJob(
     userId: string,
-    input: StealAudioInput,
-    context?: { apiKeyId?: string }
-  ) {
-    const startTime = Date.now();
+    input: StealAudioInput
+  ): Promise<{ job: Job }> {
     const { preset, operations: customOps, file } = input;
 
     if (!file) {
@@ -33,58 +25,48 @@ export class AudioService {
       throw new ApiError(
         'AUDIO_INVALID_INPUT',
         'Either preset or operations must be provided',
-        400,
+        400
       );
     }
 
-    const operationsToRun = (preset
-      ? AUDIO_PRESETS[preset as AudioPreset].operations
-      : customOps!) as AudioOperation[];
+    const operations = this.resolveOperations(preset, customOps);
 
     const arrayBuffer = await file.arrayBuffer();
-    const originalBuffer = Buffer.from(arrayBuffer);
-    const rawPcmData = await this.decodeToRaw(originalBuffer);
+    const inputSize = arrayBuffer.byteLength;
+    const originalFilename = file.name;
 
-    let pipeline = new AudioPipeline(rawPcmData);
-
-    for (const op of operationsToRun) {
-      pipeline = pipeline.apply(op);
-    }
-
-    const result = await pipeline.execute();
-
-    const outputWavBuffer = await this.encodeToMp3(result.data as Buffer);
-
-    const operationNames = operationsToRun.map(op => op.type);
-    
-    const inputHash = hashInput({
+    const job = await jobService.create({
       userId,
-      pipelineType: 'audio',
-      operations: operationNames,
-      inputSize: originalBuffer.length,
+      payload: {
+        type: 'audio',
+        operations,
+        originalFilename,
+        inputSize,
+      },
     });
 
-    try {
-      await usageService.record({
-        idempotencyKey: generateIdempotencyKey(userId, 'audio', inputHash),
-        userId,
-        apiKeyId: context?.apiKeyId,
-        pipelineType: 'audio',
-        operations: operationNames,
-        inputBytes: originalBuffer.length,
-        outputBytes: outputWavBuffer.length,
-        processingMs: Date.now() - startTime,
-      });
-    } catch (e) {
-      console.error('Usage recording error:', e);
+    // TODO: Aqui será feito upload do arquivo para storage (S3, etc)
+    // const inputUrl = await storageService.upload(userId, job.id, originalFilename, buffer);
+    // Depois o worker baixa o arquivo e processa
+
+    await jobService.enqueue(job);
+
+    return { job };
+  }
+
+  private resolveOperations(
+    preset?: string,
+    customOps?: AudioOperation[]
+  ): AudioOperation[] {
+    if (preset) {
+      const presetConfig = AUDIO_PRESETS[preset as AudioPreset];
+      if (!presetConfig) {
+        throw new ApiError('AUDIO_INVALID_PRESET', `Unknown preset: ${preset}`, 400);
+      }
+      return presetConfig.operations as unknown as AudioOperation[];
     }
 
-    return {
-      file: outputWavBuffer,
-      filename: `processed_${Date.now()}.mp3`,
-      metrics: result.metrics,
-      details: result.details,
-    };
+    return customOps!;
   }
 
   listPresets() {
@@ -92,7 +74,7 @@ export class AudioService {
       id,
       name: preset.name,
       description: preset.description,
-      operations: preset.operations.map(op => op.type),
+      operations: preset.operations.map((op) => op.type),
     }));
   }
 
@@ -103,63 +85,6 @@ export class AudioService {
       description: op.description,
       params: op.params,
     }));
-  }
-
-  private async decodeToRaw(inputBuffer: Buffer): Promise<Buffer> {
-    // Cria um caminho temporário único
-    const tempInputPath = join(tmpdir(), `robin_input_${Date.now()}_${Math.random().toString(36).slice(2)}`);
-    
-    // 1. Escreve o buffer no disco (para permitir que o FFmpeg faça 'seek' no M4A)
-    await Bun.write(tempInputPath, inputBuffer);
-
-    return new Promise((resolve, reject) => {
-      const chunks: Buffer[] = [];
-      const outputStream = new PassThrough();
-      
-      outputStream.on('data', (c) => chunks.push(c));
-
-      ffmpeg(tempInputPath) // <--- LÊ DO ARQUIVO, NÃO DO STREAM
-        .noVideo()
-        .audioChannels(1)
-        .audioFrequency(44100)
-        .format('f32le')
-        .audioCodec('pcm_f32le')
-        .on('error', async (err) => {
-          // Limpa o arquivo em caso de erro
-          await unlink(tempInputPath).catch(() => {}); 
-          console.error('FFmpeg Decode Error:', err);
-          reject(new ApiError('PROCESSING_ERROR', `Decode failed: ${err.message}`, 500));
-        })
-        .on('end', async () => {
-            // Limpa o arquivo após sucesso
-            await unlink(tempInputPath).catch(() => {});
-            const result = Buffer.concat(chunks);
-            resolve(result);
-        })
-        .pipe(outputStream);
-    });
-  }
-
-  // Substitua o antigo encodeToWav por este:
-  private encodeToMp3(rawPcmBuffer: Buffer): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const inputStream = new Readable();
-      inputStream.push(rawPcmBuffer);
-      inputStream.push(null);
-
-      const chunks: Buffer[] = [];
-      const outputStream = new PassThrough();
-      outputStream.on('data', (c) => chunks.push(c));
-
-      ffmpeg(inputStream)
-        .inputFormat('f32le')
-        .inputOptions(['-ar 44100', '-ac 1']) // Lê o RAW PCM
-        .toFormat('mp3')                      // Converte para MP3
-        .audioBitrate('128k')                 // 128kbps (Bom balanço tamanho/qualidade)
-        .on('error', (err) => reject(new ApiError('PROCESSING_ERROR', `Encode failed: ${err.message}`, 500)))
-        .on('end', () => resolve(Buffer.concat(chunks)))
-        .pipe(outputStream);
-    });
   }
 }
 
