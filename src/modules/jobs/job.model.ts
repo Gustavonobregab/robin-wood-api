@@ -1,7 +1,6 @@
-import { Schema, model, Model } from 'mongoose';
-import type { Job } from './job.types';
+import { Schema, model } from 'mongoose';
 
-const jobSchema = new Schema<Job>(
+const jobSchema = new Schema(
   {
     userId: { type: String, required: true, index: true },
     status: {
@@ -31,4 +30,4 @@ const jobSchema = new Schema<Job>(
 jobSchema.index({ userId: 1, createdAt: -1 });
 jobSchema.index({ status: 1, createdAt: 1 });
 
-export const JobModel: Model<Job> = model<Job>('Job', jobSchema);
+export const JobModel = model('Job', jobSchema);

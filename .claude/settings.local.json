@@ -9,7 +9,8 @@
       "WebFetch(domain:www.adarsha.dev)",
       "mcp__ide__getDiagnostics",
       "Bash(npx tsc:*)",
-      "Bash(bun run build:*)"
+      "Bash(bun run build:*)",
+      "Bash(bun add:*)"
     ]
   }
 }

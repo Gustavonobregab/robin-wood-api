@@ -27,7 +27,7 @@ export class TextService {
 
     const operations = this.resolveOperations(preset, customOps);
 
-    const job = await jobService.create({ 
+    const job = await jobService.create({
       userId,
        payload:
        { type: 'text',
@@ -35,7 +35,9 @@ export class TextService {
          operations,
          source: { kind: 'url', url: textUrl },
        }});
-       
+
+    await jobService.enqueue(job);
+
     return { job };
   }
 

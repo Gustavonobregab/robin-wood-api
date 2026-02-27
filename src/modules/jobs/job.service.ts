@@ -31,8 +31,20 @@ export class JobService {
     return doc ? this.toJob(doc) : null;
   }
 
-  async enqueue(_job: Job): Promise<void> {
-    // TODO: Implement integration with real queue system
+  async enqueue(job: Job): Promise<void> {
+    const { queues } = await import('../../queues/queue');
+    const jobDoc = await JobModel.findById(job.id);
+    if (!jobDoc) return;
+
+    const jobType = jobDoc.payload?.type as 'text' | 'audio';
+    const queue = jobType === 'text' ? queues.text : queues.audio;
+
+    await this.updateStatus(job.id, 'queued');
+
+    await queue.add(jobType, {
+      data: { jobId: job.id },
+      metadata: { step: 'CREATED' },
+    });
   }
 
   private toJob(doc: any): Job {

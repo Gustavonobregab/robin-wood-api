@@ -33,6 +33,8 @@ export class AudioService {
        name: audioUrl,
      } });
 
+    await jobService.enqueue(job);
+
     return { job };
   }
 

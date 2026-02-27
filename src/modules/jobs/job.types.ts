@@ -51,6 +51,20 @@ export type JobPayload = AudioJobPayload | TextJobPayload | ImageJobPayload;
     operations: any[];
   };
   
+  export type JobDocument = {
+    userId: string;
+    status: JobStatus;
+    payload: JobPayload;
+    completedAt?: Date;
+    error?: string;
+    result?: {
+      outputUrl?: string;
+      metrics?: Record<string, unknown>;
+    };
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
   export type Job = {
     id: string;
     userId: string;
