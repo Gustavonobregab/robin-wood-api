@@ -1,4 +1,4 @@
-import type { JobStatus, JobPayload, Job } from './job.types';
+import type { JobPayload, Job } from './job.types';
 import { JobModel } from './job.model';
 
 export class JobService {
@@ -22,15 +22,6 @@ export class JobService {
     return docs.map((doc) => this.toJob(doc));
   }
 
-  async updateStatus(jobId: string, status: JobStatus, error?: string): Promise<Job | null> {
-    const doc = await JobModel.findByIdAndUpdate(
-      jobId,
-      { status, ...(error && { error }) },
-      { new: true },
-    );
-    return doc ? this.toJob(doc) : null;
-  }
-
   async enqueue(job: Job): Promise<void> {
     const { queues } = await import('../../queues/queue');
     const jobDoc = await JobModel.findById(job.id);
@@ -38,8 +29,6 @@ export class JobService {
 
     const jobType = jobDoc.payload?.type as 'text' | 'audio';
     const queue = jobType === 'text' ? queues.text : queues.audio;
-
-    await this.updateStatus(job.id, 'queued');
 
     await queue.add(jobType, {
       data: { jobId: job.id },
