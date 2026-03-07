@@ -108,8 +108,8 @@ export const AudioOperationSchema = t.Union([
     params: t.Optional(t.Object({
       ratio: t.Optional(t.Number({ minimum: 1, maximum: 20 })),
       threshold: t.Optional(t.Number({ minimum: -60, maximum: 0 })),
-      attack: t.Optional(t.Number()),
-      release: t.Optional(t.Number()),
+      attack: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
+      release: t.Optional(t.Number({ minimum: 0, maximum: 1000 })),
     })),
   }),
   t.Object({
