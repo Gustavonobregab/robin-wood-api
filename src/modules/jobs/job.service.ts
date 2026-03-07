@@ -25,9 +25,11 @@ export class JobService {
   async enqueue(job: Job): Promise<void> {
     const { queues } = await import('../../queues/queue');
     const jobDoc = await JobModel.findById(job.id);
+    
     if (!jobDoc) return;
 
     const jobType = jobDoc.payload?.type as 'text' | 'audio';
+    
     const queue = jobType === 'text' ? queues.text : queues.audio;
 
     await queue.add(jobType, {

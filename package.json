@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun run src/server.ts",
     "start": "bun run src/server.ts",
+    "worker": "bun run src/worker/index.ts",
     "seed": "bun run src/scripts/seed-api-keys.ts"
   },
   "dependencies": {

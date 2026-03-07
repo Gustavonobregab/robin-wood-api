@@ -4,7 +4,6 @@ import { connectDatabase } from './config/database';
 import { auth } from './config/auth';
 import { apiErrorPlugin } from './utils/api-error';
 import { cors } from '@elysiajs/cors';
-import { startWorkers } from './queues/queue';
 const { keysRoutes } = await import('./modules/keys/keys.routes');
 const { usageRoutes } = await import('./modules/usage/usage.routes');
 const { usersRoutes } = await import('./modules/users/users.routes');
@@ -27,6 +26,4 @@ const app = new Elysia()
   .use(usersRoutes)
   .use(audioRoutes)
   .use(textRoutes)
-   startWorkers();
-
   app.listen(3002);
