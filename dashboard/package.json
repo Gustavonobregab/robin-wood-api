@@ -1,0 +1,10 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Dashboard dev server - add your frontend stack here'",
+    "build": "echo 'Dashboard build - add your frontend stack here'"
+  }
+}
