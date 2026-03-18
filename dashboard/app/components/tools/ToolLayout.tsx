@@ -1,9 +1,11 @@
+import type { ReactNode } from 'react'
+
 interface ToolLayoutProps {
   title: string
   description: string
-  inputPanel: React.ReactNode
-  outputPanel: React.ReactNode
-  action: React.ReactNode
+  inputPanel: ReactNode
+  outputPanel: ReactNode
+  action: ReactNode
 }
 
 export function ToolLayout({ title, description, inputPanel, outputPanel, action }: ToolLayoutProps) {
