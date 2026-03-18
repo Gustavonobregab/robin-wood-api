@@ -86,9 +86,36 @@ export interface ApiKey {
 // ─── Text ────────────────────────────────────────────────────
 export type TextPreset = 'chill' | 'medium' | 'aggressive'
 
+export interface TextPresetDef {
+  id: string
+  name: string
+  description: string
+  operations: string[]
+}
+
+export interface TextOperationParamDef {
+  type: 'number' | 'string'
+  min?: number
+  max?: number
+  default: number | string
+}
+
+export interface TextOperationDef {
+  id: string
+  name: string
+  description: string
+  params: Record<string, TextOperationParamDef>
+}
+
+export interface TextOperationInput {
+  type: string
+  params?: Record<string, number | string>
+}
+
 export interface SubmitTextJobInput {
   textUrl: string
-  preset: TextPreset
+  preset?: TextPreset
+  operations?: TextOperationInput[]
 }
 
 // ─── Audio ───────────────────────────────────────────────────

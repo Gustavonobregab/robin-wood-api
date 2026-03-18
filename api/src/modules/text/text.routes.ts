@@ -1,12 +1,12 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/api-key';
+import { validateAuth } from '../../middlewares/auth';
 import { textService } from './text.service';
 import { TextOperationSchema, TextPresetSchema } from './text.types';
 import { jobService } from '../jobs/job.service';
 import { ApiError } from '../../utils/api-error';
 
 export const textRoutes = new Elysia({ prefix: '/text' })
-  .use(validateApiKey)
+  .use(validateAuth)
 
   .post(
     '/',

@@ -1,9 +1,9 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/api-key';
+import { validateAuth } from '../../middlewares/auth';
 import { usersService } from './users.service';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
-  .use(validateApiKey)
+  .use(validateAuth)
 
   .get('/me', async ({ userId }) => {
     const result = await usersService.getProfile(userId);

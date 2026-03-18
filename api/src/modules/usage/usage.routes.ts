@@ -1,9 +1,9 @@
 import { Elysia, t } from 'elysia';
-import { validateApiKey } from '../../middlewares/api-key';
+import { validateAuth } from '../../middlewares/auth';
 import { usageService } from './usage.service';
 
 export const usageRoutes = new Elysia({ prefix: '/usage' })
-  .use(validateApiKey)
+  .use(validateAuth)
 
   .get('/current', async ({ userId }) => {
     const result = await usageService.getCurrentUsage(userId);

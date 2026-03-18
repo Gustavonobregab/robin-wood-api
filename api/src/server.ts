@@ -14,7 +14,7 @@ await connectDatabase();
 
 const app = new Elysia()
   .use(cors({
-      origin: "http://localhost:3333",
+      origin: ['http://localhost:3000', 'http://localhost:3333', 'http://localhost:3002'],
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
