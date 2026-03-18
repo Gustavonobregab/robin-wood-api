@@ -2,11 +2,13 @@
 'use client'
 import useSWR from 'swr'
 import { useRef } from 'react'
-import type { Job } from '@/types'
-import type { ApiResponse } from '@/types'
+import type { Job, ApiResponse } from '@/types'
 
 const POLL_INTERVAL_MS = 2000
 const MAX_POLLS = 150 // 5 minutes
+
+const isTerminal = (status?: string) =>
+  status === 'completed' || status === 'failed'
 
 interface UseJobPollOptions {
   jobId: string | null
@@ -16,8 +18,11 @@ interface UseJobPollOptions {
 export function useJobPoll({ jobId, fetcher }: UseJobPollOptions) {
   const pollCount = useRef(0)
 
-  const isTerminal = (status?: string) =>
-    status === 'completed' || status === 'failed'
+  const prevJobId = useRef<string | null>(null)
+  if (jobId !== prevJobId.current) {
+    pollCount.current = 0
+    prevJobId.current = jobId
+  }
 
   const { data, error } = useSWR<ApiResponse<Job>>(
     jobId ? `job-poll-${jobId}` : null,

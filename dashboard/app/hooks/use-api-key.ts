@@ -21,5 +21,5 @@ export function useApiKey() {
     setApiKeyState(null)
   }, [])
 
-  return { apiKey, hasKey: apiKey !== null, setApiKey, clearApiKey }
+  return { apiKey, hasKey: !!apiKey, setApiKey, clearApiKey }
 }

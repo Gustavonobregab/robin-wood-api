@@ -26,4 +26,12 @@ describe('useApiKey', () => {
     expect(result.current.apiKey).toBeNull()
     expect(localStorage.getItem('robin_api_key')).toBeNull()
   })
+
+  it('reads a pre-existing key from localStorage on mount', async () => {
+    localStorage.setItem('robin_api_key', 'sk_live_existing')
+    const { result } = renderHook(() => useApiKey())
+    await act(async () => {})
+    expect(result.current.apiKey).toBe('sk_live_existing')
+    expect(result.current.hasKey).toBe(true)
+  })
 })
