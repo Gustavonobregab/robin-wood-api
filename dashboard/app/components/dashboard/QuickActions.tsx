@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { FileText, Music, Image as ImageIcon } from 'lucide-react'
 

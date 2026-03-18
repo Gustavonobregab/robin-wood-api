@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/app/components/ui/table'
@@ -18,8 +19,8 @@ export function RecentJobsTable({ jobs }: RecentJobsTableProps) {
         <p className="text-muted text-sm">No jobs yet.</p>
         <p className="text-muted text-xs mt-1">
           Try processing some{' '}
-          <a href="/dashboard/text" className="underline text-foreground">text</a> or{' '}
-          <a href="/dashboard/audio" className="underline text-foreground">audio</a>.
+          <Link href="/dashboard/text" className="underline text-foreground">text</Link> or{' '}
+          <Link href="/dashboard/audio" className="underline text-foreground">audio</Link>.
         </p>
       </div>
     )
