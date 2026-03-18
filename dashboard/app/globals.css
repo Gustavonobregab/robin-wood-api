@@ -10,7 +10,6 @@
   body {
     background-color: theme('colors.background');
     color: theme('colors.foreground');
-    font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 }
