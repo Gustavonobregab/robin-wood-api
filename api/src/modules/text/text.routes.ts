@@ -12,9 +12,7 @@ export const textRoutes = new Elysia({ prefix: '/text' })
     '/',
     async ({ body, userId }) => {
       const { job } = await textService.processText(userId, body);
-      return {
-        data: job,
-      };
+      return job;
     },
     {
       body: t.Object({
@@ -43,7 +41,7 @@ export const textRoutes = new Elysia({ prefix: '/text' })
         throw new ApiError('JOB_NOT_FOUND', 'Job not found', 404);
       }
 
-      return { data: job };
+      return job;
     },
     {
       detail: {
@@ -53,16 +51,6 @@ export const textRoutes = new Elysia({ prefix: '/text' })
     }
   )
 
-  .get('/presets', () => {
-    const result = textService.listPresets();
-    return {
-      data: result,
-    };
-  })
+  .get('/presets', () => textService.listPresets())
 
-  .get('/operations', () => {
-    const result = textService.listOperations();
-    return {
-      data: result,
-    };
-  });
+  .get('/operations', () => textService.listOperations());

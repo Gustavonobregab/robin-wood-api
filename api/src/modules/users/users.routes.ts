@@ -6,13 +6,11 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
   .use(validateAuth)
 
   .get('/me', async ({ userId }) => {
-    const result = await usersService.getProfile(userId);
-    return { data: result };
+    return await usersService.getProfile(userId);
   })
 
   .patch('/me', async ({ userId, body }) => {
-    const result = await usersService.updateProfile(userId, body);
-    return { data: result };
+    return await usersService.updateProfile(userId, body);
   }, {
     body: t.Object({
       name: t.String({ minLength: 2 }),
@@ -20,8 +18,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
   })
 
   .put('/webhook-config', async ({ userId, body }) => {
-    const result = await usersService.updateWebhookUrl(userId, body.url);
-    return { data: result };
+    return await usersService.updateWebhookUrl(userId, body.url);
   }, {
     body: t.Object({ url: t.String({ format: 'uri' }) }),
   });

@@ -12,9 +12,7 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
     '/',
     async ({ body, userId }) => {
         const { job } = await audioService.processAudio(userId, body);
-        return {
-          data: job,
-        };
+        return job;
       },
     {
       body: t.Object({
@@ -43,7 +41,7 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
         throw new ApiError('JOB_NOT_FOUND', 'Job not found', 404);
       }
 
-      return { data: job };
+      return job;
     },
     {
       detail: {
@@ -53,16 +51,6 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
     }
   )
 
-  .get('/presets', () => {
-    const result = audioService.listPresets();
-    return {
-      data: result,
-    };
-  })
+  .get('/presets', () => audioService.listPresets())
 
-  .get('/operations', () => {
-    const result = audioService.listOperations();
-    return {
-      data: result,
-    };
-  });
+  .get('/operations', () => audioService.listOperations());

@@ -2,19 +2,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  const sessionCookie =
-    request.cookies.get('better-auth.session_token') ||
-    request.cookies.get('__Secure-better-auth.session_token')
-
-  if (!sessionCookie?.value) {
-    const signInUrl = new URL('/sign-in', request.url)
-    signInUrl.searchParams.set('callbackUrl', pathname)
-    return NextResponse.redirect(signInUrl)
-  }
-
+// TODO: Restore session validation once login (better-auth) is implemented
+export function middleware(_request: NextRequest) {
   return NextResponse.next()
 }
 
