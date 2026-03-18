@@ -27,17 +27,26 @@ export function Features() {
 
         {/* Two large feature cards */}
         <div className="grid grid-cols-5 gap-4 mb-4">
-          {/* Card 1 — API Pipeline (spans 3) */}
-          <div className="col-span-3 bg-background-section rounded-2xl border border-border overflow-hidden flex flex-col">
-            <div className="flex-1 p-8">
-              <div className="bg-background rounded-xl p-5 shadow-sm border border-border mb-4">
+          {/* Card 1 — API Pipeline (spans 3) with gradient + noise */}
+          <div className="col-span-3 relative rounded-2xl overflow-hidden flex flex-col" style={{ background: 'linear-gradient(135deg, #A0C878 0%, #DDEB9D 40%, #FFFDF6 70%, #A0C878 100%)' }}>
+            {/* Noise overlay */}
+            <div
+              className="pointer-events-none absolute inset-0 z-0 mix-blend-overlay opacity-50"
+              style={{
+                backgroundImage: 'url(/noise.svg)',
+                backgroundSize: '256px 256px',
+                imageRendering: 'pixelated' as React.CSSProperties['imageRendering'],
+              }}
+            />
+            <div className="relative z-10 flex-1 p-8">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-5 shadow-sm border border-white/30 mb-4">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-3 h-3 rounded-full bg-red-300" />
                   <div className="w-3 h-3 rounded-full bg-yellow-300" />
                   <div className="w-3 h-3 rounded-full bg-accent-strong" />
-                  <span className="text-xs text-muted ml-2 font-mono">POST /api/text</span>
+                  <span className="text-xs text-foreground/60 ml-2 font-mono">POST /api/text</span>
                 </div>
-                <pre className="text-xs text-muted font-mono leading-relaxed">
+                <pre className="text-xs text-foreground/70 font-mono leading-relaxed">
 {`{
   "textUrl": "https://...",
   "operations": [
@@ -47,16 +56,16 @@ export function Features() {
 }`}
                 </pre>
               </div>
-              <div className="bg-background/60 rounded-xl p-4 shadow-sm border border-border">
-                <div className="flex items-center gap-2 text-xs text-muted font-mono">
-                  <span className="text-accent-strong font-semibold">200</span>
-                  <span>→ compressionRatio: 0.42 · tokensSaved: 1,248</span>
+              <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/30">
+                <div className="flex items-center gap-2 text-xs font-mono">
+                  <span className="text-emerald-700 font-semibold">200</span>
+                  <span className="text-foreground/60">→ compressionRatio: 0.42 · tokensSaved: 1,248</span>
                 </div>
               </div>
             </div>
-            <div className="px-8 pb-8">
-              <h3 className="font-semibold text-lg mb-1">Unified API pipeline</h3>
-              <p className="text-sm text-muted leading-relaxed">
+            <div className="relative z-10 px-8 pb-8">
+              <h3 className="font-semibold text-lg mb-1 text-foreground">Unified API pipeline</h3>
+              <p className="text-sm text-foreground/70 leading-relaxed">
                 Chain multiple operations in a single API call. Trim, compress, normalize — built on our optimized processing engine.
               </p>
             </div>
