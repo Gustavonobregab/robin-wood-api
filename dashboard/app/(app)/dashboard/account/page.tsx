@@ -16,6 +16,7 @@ export default function AccountPage() {
   const { data: session } = useSession()
   const user = session?.user
 
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [changingPw, setChangingPw] = useState(false)
@@ -32,8 +33,9 @@ export default function AccountPage() {
     }
     setChangingPw(true)
     try {
-      await authClient.changePassword({ newPassword, revokeOtherSessions: false })
+      await authClient.changePassword({ currentPassword, newPassword, revokeOtherSessions: false })
       toast.success('Password updated')
+      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch {
@@ -64,6 +66,17 @@ export default function AccountPage() {
       <div className="bg-background rounded-xl border border-border shadow-sm p-6">
         <h2 className="font-semibold mb-4">Change password</h2>
         <form onSubmit={handleChangePassword} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="current-pw">Current password</Label>
+            <Input
+              id="current-pw"
+              type="password"
+              placeholder="Enter current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="new-pw">New password</Label>
             <Input
