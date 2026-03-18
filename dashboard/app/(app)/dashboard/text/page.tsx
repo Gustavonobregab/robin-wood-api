@@ -24,7 +24,7 @@ export default function TextPage() {
   const [jobId, setJobId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const { job, isPolling, isCompleted, isFailed, timedOut, error } = useJobPoll({
+  const { job, isPolling, isCompleted, isFailed, timedOut } = useJobPoll({
     jobId,
     fetcher: getTextJobStatus,
   })
