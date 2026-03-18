@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/app/components/ui/button'
@@ -10,6 +10,8 @@ import { signIn } from '@/app/lib/auth-client'
 
 export default function SignInPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -23,7 +25,7 @@ export default function SignInPage() {
         toast.error('Invalid email or password')
         return
       }
-      router.push('/dashboard')
+      router.push(callbackUrl)
     } catch {
       toast.error('Invalid email or password')
     } finally {

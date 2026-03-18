@@ -33,7 +33,11 @@ export default function AccountPage() {
     }
     setChangingPw(true)
     try {
-      await authClient.changePassword({ currentPassword, newPassword, revokeOtherSessions: false })
+      const { error } = await authClient.changePassword({ currentPassword, newPassword, revokeOtherSessions: false })
+      if (error) {
+        toast.error('Failed to change password')
+        return
+      }
       toast.success('Password updated')
       setCurrentPassword('')
       setNewPassword('')
