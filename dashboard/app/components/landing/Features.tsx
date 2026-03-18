@@ -1,5 +1,5 @@
 // dashboard/app/components/landing/Features.tsx
-import { FileText, Music, Image } from 'lucide-react'
+import { FileText, Music, Image as ImageIcon } from 'lucide-react'
 
 const features = [
   {
@@ -13,7 +13,7 @@ const features = [
     description: 'Remove silence, normalize, speed up. Optimized presets for podcasts and lectures.',
   },
   {
-    icon: Image,
+    icon: ImageIcon,
     title: 'Image compression',
     description: 'Smart compression that keeps your images looking sharp. Coming soon.',
   },
