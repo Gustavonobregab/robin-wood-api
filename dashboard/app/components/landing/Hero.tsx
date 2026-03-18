@@ -1,28 +1,183 @@
-// dashboard/app/components/landing/Hero.tsx
+'use client'
 import Link from 'next/link'
+import { useState } from 'react'
 import { Button } from '@/app/components/ui/button'
-import { Badge } from '@/app/components/ui/badge'
+import { cn } from '@/app/lib/utils'
+
+const DEMO_TABS = ['Text Compression', 'Audio Processing', 'Image Optimization'] as const
 
 export function Hero() {
+  const [activeTab, setActiveTab] = useState<(typeof DEMO_TABS)[number]>('Text Compression')
+
   return (
-    <section className="bg-background py-24">
-      <div className="max-w-6xl mx-auto px-8 text-center">
-        <Badge className="mb-6 bg-accent-light text-foreground border-0 rounded-full px-4 py-1">
-          Text · Audio · Image
-        </Badge>
-        <h1 className="text-5xl font-bold tracking-tight leading-tight mb-6">
-          Compress everything.<br />Ship faster.
-        </h1>
-        <p className="text-xl text-muted max-w-2xl mx-auto mb-10">
-          Robin gives you a simple API to compress text, audio, and images. Reduce size, reduce cost, keep quality.
-        </p>
-        <Button
-          size="lg"
-          className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light px-8"
-          asChild
-        >
-          <Link href="/sign-up">Start for free</Link>
-        </Button>
+    <section className="pt-14 pb-8">
+      <div className="max-w-6xl mx-auto px-8">
+        {/* Two-column header */}
+        <div className="flex items-start justify-between gap-16 mb-16">
+          <h1 className="text-[3.5rem] font-medium leading-[1.1] tracking-tight max-w-2xl">
+            Compression API that powers modern applications
+          </h1>
+          <p className="text-lg text-muted leading-relaxed max-w-sm pt-2">
+            Powering developers and teams worldwide. From text compression for token savings, audio processing for media, to the most efficient compression pipeline.
+          </p>
+        </div>
+
+        {/* CTA buttons */}
+        <div className="flex items-center gap-3 mb-16">
+          <Button className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light px-6" asChild>
+            <Link href="/sign-up">Sign up</Link>
+          </Button>
+          <Button variant="outline" className="rounded-full px-6" asChild>
+            <Link href="#pricing">View pricing</Link>
+          </Button>
+        </div>
+
+        {/* Demo card */}
+        <div className="bg-background-section rounded-2xl border border-border overflow-hidden">
+          {/* Tabs inside card */}
+          <div className="flex items-center gap-1 px-6 pt-5">
+            {DEMO_TABS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  'flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors',
+                  activeTab === tab
+                    ? 'bg-background text-foreground shadow-sm border border-border'
+                    : 'text-muted hover:text-foreground'
+                )}
+              >
+                <span
+                  className={cn(
+                    'w-2 h-2 rounded-full',
+                    tab === 'Text Compression' && 'bg-accent-strong',
+                    tab === 'Audio Processing' && 'bg-emerald-400',
+                    tab === 'Image Optimization' && 'bg-blue-400'
+                  )}
+                />
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Demo content */}
+          <div className="p-6">
+            <div className="bg-background rounded-xl border border-border shadow-sm">
+              {activeTab === 'Text Compression' && (
+                <div className="grid grid-cols-2 divide-x divide-border">
+                  <div className="p-6 space-y-3">
+                    <div className="text-xs text-muted uppercase tracking-wider mb-4">Operations</div>
+                    {['Trim whitespace', 'Remove stopwords', 'Minify', 'Summarize'].map((op, i) => (
+                      <div
+                        key={op}
+                        className={cn(
+                          'flex items-center justify-between px-3 py-2.5 rounded-lg text-sm',
+                          i === 0 && 'bg-background-section'
+                        )}
+                      >
+                        <span>{op}</span>
+                        <span className="text-muted text-xs">{['Active', 'Active', 'Active', 'Optional'][i]}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-6">
+                    <div className="text-xs text-muted uppercase tracking-wider mb-4">Preview</div>
+                    <div className="text-sm text-muted leading-relaxed">
+                      <p className="mb-3">The quick brown fox jumps over the lazy dog. This is a sample text that would be compressed using Robin&apos;s text pipeline.</p>
+                      <p className="text-foreground font-medium">Result: 42% smaller, 58% fewer tokens</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'Audio Processing' && (
+                <div className="grid grid-cols-2 divide-x divide-border">
+                  <div className="p-6 space-y-3">
+                    <div className="text-xs text-muted uppercase tracking-wider mb-4">Pipeline</div>
+                    {['Trim silence', 'Normalize', 'Compress dynamics', 'Speed up'].map((op, i) => (
+                      <div
+                        key={op}
+                        className={cn(
+                          'flex items-center justify-between px-3 py-2.5 rounded-lg text-sm',
+                          i === 0 && 'bg-background-section'
+                        )}
+                      >
+                        <span>{op}</span>
+                        <span className="text-muted text-xs">{['0.5', '-14 dB', '4:1', '1.25x'][i]}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-6">
+                    <div className="text-xs text-muted uppercase tracking-wider mb-4">Output</div>
+                    <div className="space-y-4">
+                      <div className="h-12 bg-background-section rounded-lg flex items-center px-4">
+                        <div className="flex gap-0.5">
+                          {Array.from({ length: 40 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="w-1 bg-foreground/30 rounded-full"
+                              style={{ height: `${Math.random() * 24 + 8}px` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-sm text-foreground font-medium">Duration: 12:34 → 8:21 (34% shorter)</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'Image Optimization' && (
+                <div className="grid grid-cols-2 divide-x divide-border">
+                  <div className="p-6">
+                    <div className="text-xs text-muted uppercase tracking-wider mb-4">Original</div>
+                    <div className="aspect-video bg-background-section rounded-lg flex items-center justify-center">
+                      <span className="text-muted text-sm">2.4 MB · 1920x1080</span>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="text-xs text-muted uppercase tracking-wider mb-4">Compressed</div>
+                    <div className="aspect-video bg-accent-light/30 rounded-lg flex items-center justify-center">
+                      <span className="text-muted text-sm">420 KB · 1920x1080</span>
+                    </div>
+                    <p className="text-sm text-foreground font-medium mt-3">82% smaller, same quality</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="flex items-center justify-between px-6 pb-5">
+            <div className="flex items-center gap-1 bg-background rounded-full border border-border p-1">
+              {['Text', 'Audio', 'Image'].map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() =>
+                    setActiveTab(
+                      label === 'Text' ? 'Text Compression' : label === 'Audio' ? 'Audio Processing' : 'Image Optimization'
+                    )
+                  }
+                  className={cn(
+                    'px-4 py-1.5 rounded-full text-sm transition-colors',
+                    (label === 'Text' && activeTab === 'Text Compression') ||
+                    (label === 'Audio' && activeTab === 'Audio Processing') ||
+                    (label === 'Image' && activeTab === 'Image Optimization')
+                      ? 'bg-accent-strong text-foreground'
+                      : 'text-muted hover:text-foreground'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <Button className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light" asChild>
+              <Link href="/sign-up">Try it free</Link>
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   )

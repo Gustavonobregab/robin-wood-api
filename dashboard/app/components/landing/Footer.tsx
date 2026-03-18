@@ -1,16 +1,59 @@
 import Link from 'next/link'
 
+const footerLinks = {
+  Product: [
+    { label: 'Text Compression', href: '#features' },
+    { label: 'Audio Processing', href: '#features' },
+    { label: 'Image Optimization', href: '#features' },
+    { label: 'Pricing', href: '#pricing' },
+  ],
+  Developers: [
+    { label: 'Documentation', href: '#' },
+    { label: 'API Reference', href: '#' },
+    { label: 'Status', href: '#' },
+  ],
+  Company: [
+    { label: 'About', href: '#' },
+    { label: 'Blog', href: '#' },
+    { label: 'Contact', href: '#' },
+  ],
+}
+
 export function Footer() {
   return (
-    <footer className="bg-background-section border-t border-border">
-      <div className="max-w-6xl mx-auto px-8 py-8 flex items-center justify-between text-sm text-muted">
-        <span className="font-semibold text-foreground">Robin</span>
-        <div className="flex gap-6">
-          <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
-          <Link href="#pricing" className="hover:text-foreground transition-colors">Pricing</Link>
-          <Link href="/sign-in" className="hover:text-foreground transition-colors">Sign in</Link>
+    <footer className="border-t border-border">
+      <div className="max-w-6xl mx-auto px-8 py-16">
+        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-16">
+          <div>
+            <span className="font-bold text-lg">Robin</span>
+            <p className="text-sm text-muted mt-3 max-w-xs leading-relaxed">
+              The compression API for modern applications. Reduce size, reduce cost, keep quality.
+            </p>
+          </div>
+
+          {Object.entries(footerLinks).map(([title, links]) => (
+            <div key={title}>
+              <h4 className="font-semibold text-sm mb-4">{title}</h4>
+              <ul className="space-y-2.5">
+                {links.map(({ label, href }) => (
+                  <li key={label}>
+                    <Link href={href} className="text-sm text-muted hover:text-foreground transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <span>© {new Date().getFullYear()} Robin</span>
+
+        <div className="flex items-center justify-between mt-16 pt-6 border-t border-border text-sm text-muted">
+          <span>&copy; {new Date().getFullYear()} Robin. All rights reserved.</span>
+          <div className="flex gap-6">
+            <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
+          </div>
+        </div>
       </div>
     </footer>
   )

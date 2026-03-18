@@ -1,5 +1,3 @@
-// dashboard/app/components/landing/Pricing.tsx
-import { Button } from '@/app/components/ui/button'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
 
@@ -8,7 +6,7 @@ const plans = [
     name: 'Free',
     price: '$0',
     description: 'For getting started',
-    features: ['10,000 tokens/month', '1 API key', 'Text + Audio compression'],
+    features: ['10,000 tokens/month', '1 API key', 'Text + Audio compression', 'Community support'],
     cta: 'Start for free',
     href: '/sign-up',
     highlight: false,
@@ -17,7 +15,7 @@ const plans = [
     name: 'Pro',
     price: '$19',
     description: 'For teams shipping fast',
-    features: ['500,000 tokens/month', '5 API keys', 'Text + Audio + Image', 'Priority processing'],
+    features: ['500,000 tokens/month', '5 API keys', 'Text + Audio + Image', 'Priority processing', 'Webhook notifications'],
     cta: 'Get Pro',
     href: '/sign-up',
     highlight: true,
@@ -26,7 +24,7 @@ const plans = [
     name: 'Enterprise',
     price: 'Custom',
     description: 'For large scale needs',
-    features: ['Unlimited tokens', 'Unlimited API keys', 'Dedicated support', 'SLA'],
+    features: ['Unlimited tokens', 'Unlimited API keys', 'Dedicated support', 'SLA & uptime guarantee', 'Custom integrations'],
     cta: 'Contact us',
     href: '/sign-up',
     highlight: false,
@@ -35,43 +33,57 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="bg-background-section py-24">
+    <section id="pricing" className="py-16">
       <div className="max-w-6xl mx-auto px-8">
-        <h2 className="text-3xl font-bold text-center mb-4">Simple pricing</h2>
-        <p className="text-muted text-center mb-16">Start free, scale as you grow.</p>
-        <div className="grid grid-cols-3 gap-6">
+        <h2 className="text-[2.75rem] font-medium leading-[1.15] tracking-tight text-center mb-4">
+          Simple pricing
+        </h2>
+        <p className="text-muted text-center mb-16 text-lg">Start free, scale as you grow.</p>
+
+        <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-xl p-6 border ${
+              className={`rounded-2xl p-7 border flex flex-col ${
                 plan.highlight
-                  ? 'bg-accent-light border-accent-strong shadow-sm'
-                  : 'bg-background border-border shadow-sm'
+                  ? 'bg-accent-strong/10 border-accent-strong'
+                  : 'bg-background border-border'
               }`}
             >
-              <div className="mb-6">
-                <h3 className="font-semibold mb-1">{plan.name}</h3>
-                <div className="text-3xl font-bold mb-1">{plan.price}<span className="text-base font-normal text-muted">{plan.price !== 'Custom' ? '/mo' : ''}</span></div>
-                <p className="text-sm text-muted">{plan.description}</p>
+              <div className="mb-8">
+                <h3 className={`font-semibold mb-1 ${plan.highlight ? 'text-muted' : 'text-muted'}`}>
+                  {plan.name}
+                </h3>
+                <div className="text-4xl font-bold mb-1">
+                  {plan.price}
+                  <span className={`text-base font-normal ${'text-muted'}`}>
+                    {plan.price !== 'Custom' ? '/mo' : ''}
+                  </span>
+                </div>
+                <p className={`text-sm ${'text-muted'}`}>
+                  {plan.description}
+                </p>
               </div>
-              <ul className="space-y-2 mb-6">
+
+              <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-accent-strong flex-shrink-0" />
-                    {f}
+                  <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <Check className={`w-4 h-4 flex-shrink-0 mt-0.5 ${plan.highlight ? 'text-background/50' : 'text-accent-strong'}`} />
+                    <span className={''}>{f}</span>
                   </li>
                 ))}
               </ul>
-              <Button
-                className={`w-full rounded-full ${
+
+              <Link
+                href={plan.href}
+                className={`w-full block text-center py-2.5 rounded-full text-sm font-medium transition-colors ${
                   plan.highlight
-                    ? 'bg-foreground text-background hover:bg-foreground/90'
+                    ? 'bg-accent-strong text-foreground hover:bg-accent-light'
                     : 'bg-accent-strong text-foreground hover:bg-accent-light'
                 }`}
-                asChild
               >
-                <Link href={plan.href}>{plan.cta}</Link>
-              </Button>
+                {plan.cta}
+              </Link>
             </div>
           ))}
         </div>

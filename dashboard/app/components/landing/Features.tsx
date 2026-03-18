@@ -1,38 +1,139 @@
-// dashboard/app/components/landing/Features.tsx
-import { FileText, Music, Image as ImageIcon } from 'lucide-react'
-
-const features = [
-  {
-    icon: FileText,
-    title: 'Text compression',
-    description: 'Trim, shorten, minify, or summarize. Multiple operations, one API call.',
-  },
-  {
-    icon: Music,
-    title: 'Audio compression',
-    description: 'Remove silence, normalize, speed up. Optimized presets for podcasts and lectures.',
-  },
-  {
-    icon: ImageIcon,
-    title: 'Image compression',
-    description: 'Smart compression that keeps your images looking sharp. Coming soon.',
-  },
-]
+import Link from 'next/link'
+import { FileText, Music, Image as ImageIcon, Zap } from 'lucide-react'
+import { Button } from '@/app/components/ui/button'
 
 export function Features() {
   return (
-    <section id="features" className="bg-background-section py-24">
+    <section id="features" className="py-16">
       <div className="max-w-6xl mx-auto px-8">
-        <h2 className="text-3xl font-bold text-center mb-4">Everything you need</h2>
-        <p className="text-muted text-center mb-16">One platform, three types of compression.</p>
-        <div className="grid grid-cols-3 gap-6">
-          {features.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="bg-background rounded-xl p-6 shadow-sm border border-border">
-              <div className="w-10 h-10 rounded-xl bg-accent-light flex items-center justify-center mb-4">
+        {/* Two-column header */}
+        <div className="flex items-start justify-between gap-16 mb-6">
+          <div>
+            <p className="text-sm text-muted mb-3">Robin Platform</p>
+            <h2 className="text-[2.75rem] font-medium leading-[1.15] tracking-tight max-w-lg">
+              Compress, process and optimize in one API
+            </h2>
+          </div>
+          <p className="text-base text-muted leading-relaxed max-w-sm pt-10">
+            Reduce file sizes, cut token costs, and speed up your applications with our unified compression platform. One API for text, audio, and images.
+          </p>
+        </div>
+
+        <div className="mb-12">
+          <Button className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light" asChild>
+            <Link href="/sign-up">Get started</Link>
+          </Button>
+        </div>
+
+        {/* Two large feature cards */}
+        <div className="grid grid-cols-5 gap-4 mb-4">
+          {/* Card 1 — API Pipeline (spans 3) */}
+          <div className="col-span-3 bg-background-section rounded-2xl border border-border overflow-hidden flex flex-col">
+            <div className="flex-1 p-8">
+              <div className="bg-background rounded-xl p-5 shadow-sm border border-border mb-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-3 h-3 rounded-full bg-red-300" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-300" />
+                  <div className="w-3 h-3 rounded-full bg-accent-strong" />
+                  <span className="text-xs text-muted ml-2 font-mono">POST /api/text</span>
+                </div>
+                <pre className="text-xs text-muted font-mono leading-relaxed">
+{`{
+  "textUrl": "https://...",
+  "operations": [
+    { "type": "trim" },
+    { "type": "minify", "params": { "level": 8 } }
+  ]
+}`}
+                </pre>
+              </div>
+              <div className="bg-background/60 rounded-xl p-4 shadow-sm border border-border">
+                <div className="flex items-center gap-2 text-xs text-muted font-mono">
+                  <span className="text-accent-strong font-semibold">200</span>
+                  <span>→ compressionRatio: 0.42 · tokensSaved: 1,248</span>
+                </div>
+              </div>
+            </div>
+            <div className="px-8 pb-8">
+              <h3 className="font-semibold text-lg mb-1">Unified API pipeline</h3>
+              <p className="text-sm text-muted leading-relaxed">
+                Chain multiple operations in a single API call. Trim, compress, normalize — built on our optimized processing engine.
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2 — Smart compression (spans 2) */}
+          <div className="col-span-2 bg-background rounded-2xl border border-border flex flex-col">
+            <div className="flex-1 p-8">
+              <div className="text-sm text-muted leading-relaxed space-y-3">
+                <p>
+                  The quick brown fox jumps over the lazy dog. <span className="text-accent-strong bg-accent-light/40 px-1 rounded">[trimmed]</span> This sample demonstrates Robin&apos;s text pipeline with real-time compression feedback.
+                </p>
+                <p className="text-foreground">
+                  Result: <span className="font-semibold">42% compression</span> with zero quality loss across 70+ languages.
+                </p>
+              </div>
+              <div className="flex items-center gap-4 mt-6">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-muted">Input</span>
+                  <span className="font-mono font-medium">2,400 tokens</span>
+                </div>
+                <span className="text-muted">→</span>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-muted">Output</span>
+                  <span className="font-mono font-medium text-accent-strong">1,392 tokens</span>
+                </div>
+              </div>
+            </div>
+            <div className="px-8 pb-8">
+              <h3 className="font-semibold text-lg mb-1">Smart compression</h3>
+              <p className="text-sm text-muted leading-relaxed">
+                Intelligent algorithms that preserve meaning while reducing size. Perfect for LLM context optimization.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Four smaller cards */}
+        <div className="grid grid-cols-4 gap-4">
+          {[
+            {
+              icon: FileText,
+              title: 'Text',
+              description: 'Trim, minify, remove stopwords, and summarize. Save tokens and reduce costs.',
+            },
+            {
+              icon: Music,
+              title: 'Audio',
+              description: 'Remove silence, normalize levels, compress dynamics. Presets for podcasts and lectures.',
+            },
+            {
+              icon: ImageIcon,
+              title: 'Image',
+              description: 'Smart compression that keeps visuals sharp. WebP, AVIF, and format conversion.',
+              badge: 'Soon',
+            },
+            {
+              icon: Zap,
+              title: 'Presets',
+              description: 'One-click presets for common workflows. Or build custom pipelines operation by operation.',
+            },
+          ].map(({ icon: Icon, title, description, badge }) => (
+            <div key={title} className="bg-background rounded-2xl border border-border p-6 flex flex-col">
+              <div className="w-10 h-10 rounded-xl bg-background-section flex items-center justify-center mb-auto">
                 <Icon className="w-5 h-5 text-foreground" />
               </div>
-              <h3 className="font-semibold mb-2">{title}</h3>
-              <p className="text-muted text-sm leading-relaxed">{description}</p>
+              <div className="mt-8">
+                <h3 className="font-semibold mb-1 flex items-center gap-2">
+                  {title}
+                  {badge && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider bg-background-section text-muted px-1.5 py-0.5 rounded-md">
+                      {badge}
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm text-muted leading-relaxed">{description}</p>
+              </div>
             </div>
           ))}
         </div>
