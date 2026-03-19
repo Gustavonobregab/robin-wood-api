@@ -20,8 +20,4 @@ export const usageRoutes = new Elysia({ prefix: '/usage' })
         t.Literal('1y'),
       ])),
     }),
-  })
-
-  .get('/limits', async ({ userId }) => {
-    return await usageService.checkLimits(userId);
   });
