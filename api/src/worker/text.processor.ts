@@ -3,6 +3,7 @@ import type { TextQueueJob } from '../queues/text.queue';
 import type { TextJobPayload } from '../modules/jobs/job.types';
 import { JobModel } from '../modules/jobs/job.model';
 import { processText } from './text/pipeline';
+import { usageService } from '../modules/usage/usage.service';
 
 const log = (jobId: string, msg: string) => console.log(`[TEXT:${jobId}] ${msg}`);
 
@@ -25,6 +26,7 @@ export default async function (job: Job<TextQueueJob>) {
   await JobModel.findByIdAndUpdate(id, { status: 'processing' });
 
   try {
+    const start = Date.now();
     const source = payload.source;
     const url = source.kind === 'url' ? source.url : source.ref;
 
@@ -59,6 +61,27 @@ export default async function (job: Job<TextQueueJob>) {
         },
       },
     });
+
+    // Record usage event
+    const processingMs = Date.now() - start;
+
+    await usageService.record({
+      idempotencyKey: `job:${id}`,
+      userId: jobDoc.userId,
+      jobId: id,
+      pipelineType: 'text',
+      operations: payload.operations.map((op) => op.type),
+      inputBytes: inputSize,
+      outputBytes: outputSize,
+      processingMs,
+      text: {
+        characterCount: input.length,
+        wordCount: input.split(/\s+/).filter(Boolean).length,
+        encoding: 'utf-8',
+      },
+    });
+
+    log(id, `Usage recorded — ${input.length} chars`);
   } catch (err) {
     log(id, `Failed: ${err instanceof Error ? err.message : err}`);
     await JobModel.findByIdAndUpdate(id, {
