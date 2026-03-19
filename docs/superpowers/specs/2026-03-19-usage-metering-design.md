@@ -23,7 +23,6 @@ The existing `UsageEvent` model is expanded with type-specific metadata fields a
 UsageEvent
 ├── idempotencyKey: string (unique)
 ├── userId: string (indexed)
-├── apiKeyId?: string                      // optional — not available from worker context
 ├── jobId: string                          // NEW — reference to Job._id
 ├── pipelineType: 'audio' | 'text' | 'image' | 'video'
 ├── operations: string[]
@@ -63,13 +62,13 @@ UsageEvent
 
 Existing indexes are sufficient:
 - `{ userId: 1, timestamp: -1 }`
-- `{ apiKeyId: 1, timestamp: -1 }`
 
-No new indexes needed at current volume. A `jobId` index can be added later if needed for lookups.
+Remove the `{ apiKeyId: 1, timestamp: -1 }` index. A `jobId` index can be added later if needed for lookups.
 
 ### Removed
 
 - `tokensSaved` field — was mixing metering with billing (input - output). Raw `inputBytes`/`outputBytes` remain; billing interprets them.
+- `apiKeyId` field — removed for now. All metering is by `userId`. Will be re-added as optional attribution field when API key access is implemented.
 
 ## 2. Recording Flow
 
@@ -101,7 +100,7 @@ Key format: `job:{jobId}`. If BullMQ retries a job, the duplicate `UsageEvent` i
 
 ### Obtaining userId
 
-The worker receives only `{ jobId }` in the queue payload. The `userId` is read from the fetched `JobModel` document (`jobDoc.userId`). The `apiKeyId` is **not available** in worker context — it will be `undefined` in usage events created from workers. This is acceptable; `apiKeyId` attribution can be added later if the Job schema is extended.
+The worker receives only `{ jobId }` in the queue payload. The `userId` is read from the fetched `JobModel` document (`jobDoc.userId`). All metering is keyed by `userId` — it is the universal identity for usage tracking regardless of how the user authenticated (session, cookie, or future API key). When API key support is added later, the key middleware will resolve the key to a `userId`, and an optional `apiKeyId` field can be added to `UsageEvent` for attribution.
 
 ### Audio processor changes (`audio.processor.ts`)
 
@@ -129,6 +128,7 @@ The worker receives only `{ jobId }` in the queue payload. The `userId` is read 
 
 ### `record(input)` method
 
+- Remove `apiKeyId` from input — not needed until API key access exists
 - Accept new optional fields: `jobId`, `audio`, `text`, `image`, `video`
 - **Remove** the `User.tokens.used` increment — metering no longer touches the User document
 - Save the enriched `UsageEvent` to MongoDB
@@ -229,7 +229,7 @@ The `tokens` field on User stays in the model to avoid a migration — it become
 
 | File | Change |
 |------|--------|
-| `api/src/modules/usage/usage.model.ts` | Add `jobId`, `audio`, `text`, `image`, `video` fields; remove `tokensSaved` |
+| `api/src/modules/usage/usage.model.ts` | Add `jobId`, `audio`, `text`, `image`, `video` fields; remove `tokensSaved` and `apiKeyId`; remove `apiKeyId` index |
 | `api/src/modules/usage/usage.types.ts` | Update `RecordUsageInput`, `RecordUsageResult`, add new analytics response types; keep `DEFAULT_TOKENS_LIMIT` |
 | `api/src/modules/usage/usage.service.ts` | Remove token increment, remove `checkLimits()`, accept new fields, redesign `getAnalytics()` and `getCurrentUsage()` |
 | `api/src/modules/usage/usage.routes.ts` | Update responses, remove `/usage/limits` |
