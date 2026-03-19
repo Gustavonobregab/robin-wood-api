@@ -9,6 +9,7 @@ const { usageRoutes } = await import('./modules/usage/usage.routes');
 const { usersRoutes } = await import('./modules/users/users.routes');
 const { audioRoutes } = await import('./modules/audio/audio.routes');
 const { textRoutes } = await import('./modules/text/text.routes');
+const { uploadRoutes } = await import('./modules/upload/upload.routes');
 
 await connectDatabase();
 
@@ -26,4 +27,5 @@ const app = new Elysia()
   .use(usersRoutes)
   .use(audioRoutes)
   .use(textRoutes)
+  .use(uploadRoutes)
   app.listen(3002);
