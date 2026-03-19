@@ -37,7 +37,7 @@ export default function TextPage() {
           : { textUrl: url, operations: settings.operations }
           
       const res = await submitTextJob(input)
-      setJobId(res.data._id)
+      setJobId(res.data.id)
     } catch {
       toast.error('Failed to submit job. Check your API key and URL.')
     } finally {
@@ -76,6 +76,7 @@ export default function TextPage() {
         <MetricsPanel
           status={job?.status}
           metrics={job?.result?.metrics}
+          outputUrl={job?.result?.outputUrl}
           error={job?.error}
           timedOut={timedOut}
         />
