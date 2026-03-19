@@ -61,12 +61,14 @@ api/src/modules/upload/
   mimeType: string          // "audio/mpeg" or "audio/wav"
   size: number              // bytes
   s3Key: string             // "uploads/{userId}/{uploadId}.mp3"
-  status: "pending" | "ready" | "expired"
+  status: "ready"           // set after successful PutObject (single-step, no "pending")
   expiresAt: Date           // 24h after creation
 }
 ```
 
-**Indexes**: `(userId, createdAt)`, `expiresAt` (TTL — MongoDB auto-deletes expired docs).
+**Indexes**: `(userId, createdAt)`, `expiresAt` (TTL — MongoDB auto-deletes expired docs, may lag ~60s).
+
+**Status lifecycle**: The upload document is only created after a successful `PutObject` to S3, so it is always `"ready"`. If the S3 upload fails, no document is created (the endpoint returns an error). Documents are deleted by MongoDB TTL when `expiresAt` passes — the application must also check `expiresAt > now` explicitly since TTL deletion can lag.
 
 ### Endpoint: `POST /upload`
 
@@ -77,7 +79,8 @@ api/src/modules/upload/
 2. Extension: `.mp3` or `.wav`
 3. Magic bytes verification (not just Content-Type):
    - MP3: starts with `FF FB`, `FF F3`, `FF F2`, or `ID3`
-   - WAV: starts with `RIFF`
+   - MP3: also `FF FA` (MPEG1 Layer 3 with CRC). `ID3` header means ID3v2 tag is present — sufficient for format validation.
+   - WAV: bytes 0-3 `RIFF` AND bytes 8-11 `WAVE` (distinguishes from other RIFF formats like AVI)
 4. S3 key: `uploads/{userId}/{ulid}.{ext}` — no user-controlled path segments
 
 **Response**:
@@ -109,8 +112,9 @@ Reads `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET` fr
 ### `audio.service.ts`
 
 - `processAudio` receives `audioId` instead of `audioUrl`
-- Resolves `audioId` → upload document → validates ownership and status
+- Resolves `audioId` → upload document → validates ownership, status, and `expiresAt > now`
 - Creates job with `source: { kind: "storage", ref: upload.s3Key }`
+- Sets job payload `name` to `upload.originalName` (preserves human-readable job identifier)
 
 ### `audio.types.ts`
 
@@ -119,8 +123,8 @@ Reads `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET` fr
 
 ### `job.types.ts`
 
-- Remove `source.kind: "url"` variant
-- Keep only `source.kind: "storage"`
+- `JobSource` union is shared across audio, text, and image payloads — keep both `"url"` and `"storage"` variants in the shared type
+- `AudioJobPayload.source` is narrowed to only `{ kind: "storage", ref: string }` (audio-specific)
 
 ### `audio.processor.ts` (Worker)
 
@@ -129,9 +133,9 @@ Current flow:
 
 New flow:
 1. `GetObject(s3Key)` → temp file → FFmpeg → `PutObject` output to `outputs/{jobId}/result.mp3`
-2. Generate presigned download URL (72h expiry) for output
+2. Generate presigned download URL for output — expiry set to `object creation time + 72h` (aligned with S3 lifecycle, not from generation time)
 3. Save `outputUrl` (presigned) in job result
-4. Clean up temp dir
+4. Clean up temp dir (follows existing `finally` block pattern)
 
 ### `server.ts`
 
@@ -158,5 +162,18 @@ New flow:
 - Magic bytes validation prevents disguised file uploads
 - S3 keys use server-generated ULIDs, no user input in paths
 - Ownership check: upload must belong to the authenticated user
-- Status check: upload must be `ready` and not expired
+- Status check: upload must be `ready` and `expiresAt > now`
 - No public S3 access; outputs via time-limited presigned URLs
+
+## Error Responses
+
+All errors use the existing `ApiError` pattern (`{ code, message, status }`).
+
+| Scenario | Code | Status |
+|----------|------|--------|
+| Missing `audio` field | `MISSING_FILE` | 400 |
+| Invalid format (extension or magic bytes) | `INVALID_FORMAT` | 422 |
+| File too large | `FILE_TOO_LARGE` | 413 |
+| `audioId` not found | `UPLOAD_NOT_FOUND` | 404 |
+| Upload belongs to another user | `UPLOAD_NOT_FOUND` | 404 |
+| Upload expired | `UPLOAD_EXPIRED` | 410 |
