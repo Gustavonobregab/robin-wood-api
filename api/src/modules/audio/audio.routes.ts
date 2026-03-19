@@ -16,7 +16,7 @@ export const audioRoutes = new Elysia({ prefix: '/audio' })
       },
     {
       body: t.Object({
-        audioUrl: t.String({ format: 'uri' }),
+        audioId: t.String(),
         preset: t.Optional(AudioPresetSchema),
         operations: t.Optional(
           t.Array(AudioOperationSchema, {
