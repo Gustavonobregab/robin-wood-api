@@ -2,10 +2,15 @@ import { join } from 'path';
 import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import type { Job } from 'bullmq';
+import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { AudioQueueJob } from '../queues/audio.queue';
 import type { AudioJobPayload } from '../modules/jobs/job.types';
 import { JobModel } from '../modules/jobs/job.model';
 import { processAudioFile } from './audio/pipeline';
+import { s3, S3_BUCKET } from '../config/storage';
+
+const HOURS_72 = 72 * 60 * 60; // seconds
 
 const log = (jobId: string, msg: string) => console.log(`[AUDIO:${jobId}] ${msg}`);
 
@@ -32,21 +37,25 @@ export default async function (job: Job<AudioQueueJob>) {
   const outputPath = join(workDir, 'output.mp3');
 
   try {
-    const source = payload.source;
-    const url = source.kind === 'url' ? source.url : source.ref;
+    // Download from S3
+    const s3Key = payload.source.ref;
+    log(id, `Downloading from S3: ${s3Key}`);
 
-    log(id, `Downloading from ${url}`);
-    const response = await fetch(url);
+    const response = await s3.send(new GetObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: s3Key,
+    }));
 
-    if (!response.ok) {
-      throw new Error(`Failed to download audio: ${response.status}`);
+    if (!response.Body) {
+      throw new Error('Empty response from S3');
     }
 
-    const buffer = await response.arrayBuffer();
+    const buffer = await response.Body.transformToByteArray();
     await Bun.write(inputPath, buffer);
     const inputSize = buffer.byteLength;
     log(id, `Downloaded ${(inputSize / 1024 / 1024).toFixed(2)}MB`);
 
+    // Process
     log(id, 'Processing pipeline...');
     await processAudioFile(inputPath, outputPath, payload.operations);
 
@@ -56,12 +65,32 @@ export default async function (job: Job<AudioQueueJob>) {
     const ratio = (inputSize / outputSize).toFixed(2);
     log(id, `Done — ${(inputSize / 1024 / 1024).toFixed(2)}MB to ${(outputSize / 1024 / 1024).toFixed(2)}MB (ratio: ${ratio}x)`);
 
-    // TODO: upload outputPath to storage and get outputUrl
+    // Upload output to S3
+    const outputKey = `outputs/${id}/result.mp3`;
+    const outputBuffer = await outputFile.arrayBuffer();
+
+    await s3.send(new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: outputKey,
+      Body: new Uint8Array(outputBuffer),
+      ContentType: 'audio/mpeg',
+    }));
+
+    log(id, `Uploaded output to S3: ${outputKey}`);
+
+    // Generate presigned URL — 72h from now (effectively aligned with S3 lifecycle
+    // since this runs immediately after PutObject; the object and URL expire ~same time)
+    const outputUrl = await getSignedUrl(
+      s3,
+      new GetObjectCommand({ Bucket: S3_BUCKET, Key: outputKey }),
+      { expiresIn: HOURS_72 }
+    );
 
     await JobModel.findByIdAndUpdate(id, {
       status: 'completed',
       completedAt: new Date(),
       result: {
+        outputUrl,
         metrics: {
           inputSize,
           outputSize,
