@@ -15,7 +15,6 @@ export default function AudioPage() {
   const [settings, setSettings] = useState<AudioSettings>({ mode: 'custom', operations: [] })
   const [jobId, setJobId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-
   const { job, isPolling, isFailed, timedOut } = useJobPoll({
     jobId,
     fetcher: getAudioJobStatus,
