@@ -9,6 +9,8 @@ import type { AudioJobPayload } from '../modules/jobs/job.types';
 import { JobModel } from '../modules/jobs/job.model';
 import { processAudioFile } from './audio/pipeline';
 import { s3, S3_BUCKET } from '../config/storage';
+import { probeAudio } from './audio/probe';
+import { usageService } from '../modules/usage/usage.service';
 
 const HOURS_72 = 72 * 60 * 60; // seconds
 
@@ -37,6 +39,7 @@ export default async function (job: Job<AudioQueueJob>) {
   const outputPath = join(workDir, 'output.mp3');
 
   try {
+    const start = Date.now();
     // Download from S3
     const s3Key = payload.source.ref;
     log(id, `Downloading from S3: ${s3Key}`);
@@ -54,6 +57,10 @@ export default async function (job: Job<AudioQueueJob>) {
     await Bun.write(inputPath, buffer);
     const inputSize = buffer.byteLength;
     log(id, `Downloaded ${(inputSize / 1024 / 1024).toFixed(2)}MB`);
+
+    // Extract audio metadata before processing
+    const probeResult = await probeAudio(inputPath);
+    log(id, `Probed — ${(probeResult.durationMs / 1000).toFixed(1)}s, ${probeResult.sampleRate}Hz, ${probeResult.channels}ch`);
 
     // Process
     log(id, 'Processing pipeline...');
@@ -99,6 +106,28 @@ export default async function (job: Job<AudioQueueJob>) {
         },
       },
     });
+
+    // Record usage event
+    const processingMs = Date.now() - start;
+
+    await usageService.record({
+      idempotencyKey: `job:${id}`,
+      userId: jobDoc.userId,
+      jobId: id,
+      pipelineType: 'audio',
+      operations: payload.operations.map((op) => op.type),
+      inputBytes: inputSize,
+      outputBytes: outputSize,
+      processingMs,
+      audio: {
+        durationMs: probeResult.durationMs,
+        format: probeResult.format,
+        sampleRate: probeResult.sampleRate,
+        channels: probeResult.channels,
+      },
+    });
+
+    log(id, 'Usage recorded');
   } catch (err) {
     log(id, `Failed: ${err instanceof Error ? err.message : err}`);
     await JobModel.findByIdAndUpdate(id, {
