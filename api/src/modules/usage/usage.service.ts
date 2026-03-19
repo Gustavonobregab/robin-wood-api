@@ -1,14 +1,12 @@
 import { UsageEventModel } from './usage.model';
-import { UserModel } from '../users/users.model';
-import { ApiError } from '../../utils/api-error';
-import { subDays, format } from 'date-fns';
+import { subDays, format, startOfMonth, endOfMonth } from 'date-fns';
 import type {
   RecordUsageInput,
   RecordUsageResult,
-  UsageLimits,
-  CurrentUsage,
   TimeRange,
-  UsageAnalytics
+  UsageAnalytics,
+  CurrentUsage,
+  UsageEvent,
 } from './usage.types';
 
 export class UsageService {
@@ -18,155 +16,155 @@ export class UsageService {
     });
 
     if (existingEvent) {
-      const user = await UserModel.findOne({ _id: input.userId });
-      if (!user) throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
-      return {
-        eventId: existingEvent._id.toString(),
-        tokensSaved: existingEvent.tokensSaved,
-        tokensRemaining: user.tokens.limit - user.tokens.used,
-      };
+      return { eventId: existingEvent._id.toString() };
     }
-
-    const tokensSaved = Math.max(0, input.inputBytes - input.outputBytes);
 
     const event = await UsageEventModel.create({
       idempotencyKey: input.idempotencyKey,
       userId: input.userId,
-      apiKeyId: input.apiKeyId,
+      jobId: input.jobId,
       pipelineType: input.pipelineType,
       operations: input.operations,
       inputBytes: input.inputBytes,
       outputBytes: input.outputBytes,
-      tokensSaved,
       processingMs: input.processingMs,
       timestamp: new Date(),
+      audio: input.audio,
+      text: input.text,
+      image: input.image,
+      video: input.video,
     });
 
-    const user = await UserModel.findOneAndUpdate(
-      { _id: input.userId },
-      { $inc: { 'tokens.used': tokensSaved } },
-      { new: true }
-    );
-
-    if (!user) throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
-
-    return {
-      eventId: event._id.toString(),
-      tokensSaved,
-      tokensRemaining: Math.max(0, user.tokens.limit - user.tokens.used),
-    };
+    return { eventId: event._id.toString() };
   }
 
   async getAnalytics(userId: string, range: TimeRange = '30d'): Promise<UsageAnalytics> {
     const now = new Date();
-    let startDate = subDays(now, 30);
-    
-    if (range === '7d') startDate = subDays(now, 7);
-    if (range === '90d') startDate = subDays(now, 90);
-    if (range === '1y') startDate = subDays(now, 365);
+    const rangeDays: Record<TimeRange, number> = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 };
+    const startDate = subDays(now, rangeDays[range]);
 
     const events = await UsageEventModel.find({
       userId,
-      timestamp: { $gte: startDate }
+      timestamp: { $gte: startDate },
     }).sort({ timestamp: -1 }).lean();
 
+    // Summary
     const totalRequests = events.length;
-    const tokensSaved = events.reduce((acc, curr) => acc + (curr.tokensSaved || 0), 0);
-    
-    const user = await UserModel.findOne({ _id: userId }).lean();
-    const tokensUsed = user?.tokens?.used || 0;
+    const totalInputBytes = events.reduce((acc, e) => acc + e.inputBytes, 0);
+    const totalOutputBytes = events.reduce((acc, e) => acc + e.outputBytes, 0);
 
-    const typeCounts: Record<string, number> = {};
-    events.forEach(e => {
-      const type = e.pipelineType || 'unknown';
-      typeCounts[type] = (typeCounts[type] || 0) + 1;
-    });
+    // Per-pipeline breakdown
+    const byPipeline: UsageAnalytics['summary']['byPipeline'] = {};
 
-    const breakdown = Object.entries(typeCounts).map(([type, count]) => ({
-      type: type.charAt(0).toUpperCase() + type.slice(1),
-      count,
-      percentage: totalRequests > 0 ? Number(((count / totalRequests) * 100).toFixed(1)) : 0
-    })).sort((a, b) => b.count - a.count);
+    const audioEvents = events.filter(e => e.pipelineType === 'audio');
+    if (audioEvents.length > 0) {
+      byPipeline.audio = {
+        requests: audioEvents.length,
+        totalInputBytes: audioEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+        totalOutputBytes: audioEvents.reduce((acc, e) => acc + e.outputBytes, 0),
+        totalMinutes: audioEvents.reduce((acc, e) => acc + (e.audio?.durationMs || 0), 0) / 60_000,
+      };
+    }
 
+    const textEvents = events.filter(e => e.pipelineType === 'text');
+    if (textEvents.length > 0) {
+      byPipeline.text = {
+        requests: textEvents.length,
+        totalInputBytes: textEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+        totalOutputBytes: textEvents.reduce((acc, e) => acc + e.outputBytes, 0),
+        totalCharacters: textEvents.reduce((acc, e) => acc + (e.text?.characterCount || 0), 0),
+        totalWords: textEvents.reduce((acc, e) => acc + (e.text?.wordCount || 0), 0),
+      };
+    }
+
+    const imageEvents = events.filter(e => e.pipelineType === 'image');
+    if (imageEvents.length > 0) {
+      byPipeline.image = {
+        requests: imageEvents.length,
+        totalInputBytes: imageEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+        totalOutputBytes: imageEvents.reduce((acc, e) => acc + e.outputBytes, 0),
+        totalMegapixels: imageEvents.reduce((acc, e) => acc + (e.image?.megapixels || 0), 0),
+      };
+    }
+
+    const videoEvents = events.filter(e => e.pipelineType === 'video');
+    if (videoEvents.length > 0) {
+      byPipeline.video = {
+        requests: videoEvents.length,
+        totalInputBytes: videoEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+        totalOutputBytes: videoEvents.reduce((acc, e) => acc + e.outputBytes, 0),
+        totalMinutes: videoEvents.reduce((acc, e) => acc + (e.video?.durationMs || 0), 0) / 60_000,
+      };
+    }
+
+    // Chart — daily request counts
     const chartMap = new Map<string, number>();
-    
     let loopDate = new Date(startDate);
     while (loopDate <= now) {
       chartMap.set(format(loopDate, 'dd/MM'), 0);
       loopDate.setDate(loopDate.getDate() + 1);
     }
-
     events.forEach(e => {
       const key = format(new Date(e.timestamp), 'dd/MM');
       if (chartMap.has(key)) {
         chartMap.set(key, (chartMap.get(key) || 0) + 1);
       }
     });
+    const chart = Array.from(chartMap.entries()).map(([date, requests]) => ({ date, requests }));
 
-    const chart = Array.from(chartMap.entries()).map(([date, requests]) => ({
-      date,
-      requests
-    }));
-
-    const recent = events.slice(0, 5).map(e => ({
-      id: e._id.toString(),
-      type: e.pipelineType ? e.pipelineType.charAt(0).toUpperCase() + e.pipelineType.slice(1) : 'Unknown',
-      status: 'success',
-      size: `${this.formatBytes(e.inputBytes)} to ${this.formatBytes(e.outputBytes)}`,
-      latency: `${e.processingMs}ms`,
-      timestamp: new Date(e.timestamp).toLocaleString('en-US', { 
-        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-      })
-    }));
+    // Recent — last 10 raw events
+    const recent = events.slice(0, 10) as unknown as UsageEvent[];
 
     return {
-      stats: { totalRequests, tokensSaved, tokensUsed },
+      summary: { totalRequests, totalInputBytes, totalOutputBytes, byPipeline },
       chart,
-      breakdown,
-      recent
+      recent,
     };
   }
 
-  async checkLimits(userId: string): Promise<UsageLimits> {
-    const user = await UserModel.findOne({ _id: userId });
-    if (!user) throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
+  async getCurrentUsage(userId: string): Promise<CurrentUsage> {
+    const now = new Date();
+    const periodStart = startOfMonth(now);
+    const periodEnd = endOfMonth(now);
 
-    const tokensRemaining = Math.max(0, user.tokens.limit - user.tokens.used);
-    const canProcess = tokensRemaining > 0;
+    const events = await UsageEventModel.find({
+      userId,
+      timestamp: { $gte: periodStart, $lte: periodEnd },
+    }).lean();
+
+    const audioEvents = events.filter(e => e.pipelineType === 'audio');
+    const textEvents = events.filter(e => e.pipelineType === 'text');
+    const imageEvents = events.filter(e => e.pipelineType === 'image');
+    const videoEvents = events.filter(e => e.pipelineType === 'video');
 
     return {
-      canProcess,
-      reason: canProcess ? undefined : 'Token limit exceeded',
-      tokensLimit: user.tokens.limit,
-      tokensUsed: user.tokens.used,
-      tokensRemaining,
+      period: { start: periodStart, end: periodEnd },
+      audio: {
+        requests: audioEvents.length,
+        minutes: audioEvents.reduce((acc, e) => acc + (e.audio?.durationMs || 0), 0) / 60_000,
+        inputBytes: audioEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+      },
+      text: {
+        requests: textEvents.length,
+        characters: textEvents.reduce((acc, e) => acc + (e.text?.characterCount || 0), 0),
+        inputBytes: textEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+      },
+      image: {
+        requests: imageEvents.length,
+        megapixels: imageEvents.reduce((acc, e) => acc + (e.image?.megapixels || 0), 0),
+        inputBytes: imageEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+      },
+      video: {
+        requests: videoEvents.length,
+        minutes: videoEvents.reduce((acc, e) => acc + (e.video?.durationMs || 0), 0) / 60_000,
+        inputBytes: videoEvents.reduce((acc, e) => acc + e.inputBytes, 0),
+      },
     };
   }
 
   async getUserStats(userId: string) {
     const totalRequests = await UsageEventModel.countDocuments({ userId });
     return { totalRequests };
-  }
-
-  async getCurrentUsage(userId: string): Promise<CurrentUsage> {
-    const user = await UserModel.findOne({ _id: userId });
-    if (!user) throw new ApiError('USER_NOT_FOUND', 'User not found', 404);
-
-    return {
-      tokensLimit: user.tokens.limit,
-      tokensUsed: user.tokens.used,
-      tokensRemaining: Math.max(0, user.tokens.limit - user.tokens.used),
-    };
-  }
-
-  // Helper privado para formatar bytes
-  private formatBytes(bytes: number, decimals = 1) {
-    if (!+bytes) return '0 B';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))}${sizes[i]}`;
   }
 }
 
