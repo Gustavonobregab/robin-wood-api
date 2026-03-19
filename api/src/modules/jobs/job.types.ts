@@ -5,9 +5,9 @@ import type { TextOperation } from "../text/text.types";
 
 export type JobStatus =
   | "created"
-  | "queued"
-  | "running"
-  | "succeeded"
+  | "pending"
+  | "processing"
+  | "completed"
   | "failed";
   
 export type JobType = 
