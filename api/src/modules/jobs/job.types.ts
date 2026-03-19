@@ -25,7 +25,7 @@ export type JobPayload = AudioJobPayload | TextJobPayload | ImageJobPayload;
   export type AudioJobPayload = {
     type: "audio";
     preset?: AudioPreset;
-    source: JobSource;
+    source: { kind: "storage"; ref: string };
     operations: AudioOperation[];
     name?: string;
   };
