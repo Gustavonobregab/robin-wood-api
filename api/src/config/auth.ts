@@ -5,14 +5,14 @@ import mongoose from "mongoose";
 const googleId = process.env.GOOGLE_CLIENT_ID;
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET;
 
+const baseURL = process.env.BETTER_AUTH_URL || 'http://localhost:3002';
+const clientURL = process.env.CLIENT_URL || 'http://localhost:3333';
+
 export const auth = betterAuth({
   database: mongodbAdapter(mongoose.connection.db as any),
-  baseURL: "http://localhost:3000/api/auth",
-  clientURL: "http://localhost:3333",
-  trustedOrigins: [
-    "http://localhost:3333",
-    "http://localhost:3000"
-  ],
+  baseURL,
+  clientURL,
+  trustedOrigins: [clientURL],
   socialProviders: {
     google: {
       clientId: googleId as string,
