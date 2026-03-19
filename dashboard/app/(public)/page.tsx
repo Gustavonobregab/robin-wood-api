@@ -1,7 +1,6 @@
 import { Hero } from '@/app/components/landing/Hero'
 import { TrustedBy } from '@/app/components/landing/TrustedBy'
 import { Features } from '@/app/components/landing/Features'
-import { HowItWorks } from '@/app/components/landing/HowItWorks'
 import { Showcase } from '@/app/components/landing/Showcase'
 import { Pricing } from '@/app/components/landing/Pricing'
 
@@ -24,8 +23,8 @@ export default function LandingPage() {
       <SectionDivider />
       <Features />
       <SectionDivider />
-      <HowItWorks />
-      <SectionDivider />
+      {/* <HowItWorks /> */}
+      {/* <SectionDivider /> */}
       <Showcase />
       <SectionDivider />
       <Pricing />

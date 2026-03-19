@@ -10,7 +10,7 @@ export function Hero() {
   const [activeTab, setActiveTab] = useState<(typeof DEMO_TABS)[number]>('Text Compression')
 
   return (
-    <section className="pt-14 pb-8">
+    <section className="pt-12 pb-8">
       <div className="max-w-6xl mx-auto px-8">
         {/* Two-column header */}
         <div className="flex items-start justify-between gap-16 mb-16">

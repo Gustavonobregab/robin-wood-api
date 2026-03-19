@@ -8,6 +8,7 @@ import {
 import { Avatar, AvatarFallback } from '@/app/components/ui/avatar'
 import { useChat } from '@/app/components/layout/ChatContext'
 import { cn } from '@/app/lib/utils'
+import { Logo } from './Logo'
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard/home': 'Home',
@@ -29,8 +30,11 @@ export function Topbar() {
   const initials = session?.user?.name?.slice(0, 2).toUpperCase() ?? 'U'
 
   return (
-    <header className="h-14 bg-background border-b border-border flex items-center justify-between px-6 flex-shrink-0">
-      <h1 className="font-semibold text-base">{title}</h1>
+    <header className="h-14 bg-background border-b border-border flex items-center justify-between px-10 flex-shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        <Logo size={24} />
+        <h1 className="font-semibold text-base truncate">{title}</h1>
+      </div>
 
       <div className="flex items-center gap-2">
         {/* Chat toggle */}

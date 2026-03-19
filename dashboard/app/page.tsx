@@ -3,7 +3,6 @@ import { Footer } from '@/app/components/landing/Footer'
 import { Hero } from '@/app/components/landing/Hero'
 import { TrustedBy } from '@/app/components/landing/TrustedBy'
 import { Features } from '@/app/components/landing/Features'
-import { HowItWorks } from '@/app/components/landing/HowItWorks'
 import { Showcase } from '@/app/components/landing/Showcase'
 import { Pricing } from '@/app/components/landing/Pricing'
 
@@ -20,7 +19,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 pt-16">
         <div className="relative max-w-6xl mx-auto">
           <div className="pointer-events-none absolute inset-y-0 left-0 w-px bg-border/60" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-border/60" />
@@ -30,8 +29,8 @@ export default function HomePage() {
           <SectionDivider />
           <Features />
           <SectionDivider />
-          <HowItWorks />
-          <SectionDivider />
+          {/* <HowItWorks /> */}
+          {/* <SectionDivider /> */}
           <Showcase />
           <SectionDivider />
           <Pricing />

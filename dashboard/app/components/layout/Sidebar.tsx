@@ -7,6 +7,7 @@ import {
 import { NavItem } from './NavItem'
 import { Separator } from '@/app/components/ui/separator'
 import { cn } from '@/app/lib/utils'
+import { Logo } from './Logo'
 
 const STORAGE_KEY = 'robin_sidebar_collapsed'
 
@@ -51,11 +52,7 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className={cn('h-14 flex items-center border-b border-border px-4', collapsed && 'justify-center px-2')}>
-        {collapsed ? (
-          <span className="font-bold text-sm">R</span>
-        ) : (
-          <span className="font-semibold tracking-tight">Robin</span>
-        )}
+        <Logo size={24} />
       </div>
 
       {/* Nav */}
