@@ -5,7 +5,7 @@ export const trimSilence: AudioOperationHandler<'trim-silence'> = {
   type: 'trim-silence',
 
   async process(inputPath, outputPath, params) {
-    const threshold = Math.round((1 - params.aggressiveness) * -50);
+    const threshold = Math.round(-50 + params.aggressiveness * 30);
     const duration = params.minSilenceDuration / 1000;
 
     await runFFmpeg(inputPath, outputPath, [

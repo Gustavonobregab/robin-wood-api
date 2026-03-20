@@ -7,7 +7,7 @@ import { signIn } from '@/app/lib/auth-client'
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard'
+  const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard/home'
   const [loading, setLoading] = useState(false)
 
   async function handleGoogleSignIn() {

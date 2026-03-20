@@ -54,7 +54,6 @@ export default function AudioPage() {
   return (
     <ToolLayout
       title="Audio compression"
-      description="Process an audio file using a preset or custom operations. Upload a .mp3 or .wav file."
       inputPanel={
         <AudioFileInput
           file={file}

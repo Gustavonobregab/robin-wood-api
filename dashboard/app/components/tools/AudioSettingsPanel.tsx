@@ -15,14 +15,12 @@ interface AudioSettingsPanelProps {
   onChange: (value: AudioSettings) => void
 }
 
-const LANG_OPTIONS = ['EN', 'PT'] as const
-
 export function AudioSettingsPanel({ value, onChange }: AudioSettingsPanelProps) {
   const { data: presetsData } = useSWR('audio/presets', () => getAudioPresets())
   const { data: operationsData } = useSWR('audio/operations', () => getAudioOperations())
 
   const presets = presetsData?.data ?? []
-  const operations = operationsData?.data ?? []
+  const operations = (operationsData?.data ?? []).filter((op) => op.id !== 'transcribe')
 
   const customOps: AudioOperationInput[] =
     value.mode === 'custom' ? value.operations : []
@@ -178,29 +176,6 @@ export function AudioSettingsPanel({ value, onChange }: AudioSettingsPanelProps)
                                   )}
                                 />
                               </button>
-                            </div>
-                          )
-                        }
-
-                        if (key === 'lang') {
-                          const val = (params[key] as string) ?? (param.default as string)
-                          return (
-                            <div key={key} className="flex gap-1.5">
-                              {LANG_OPTIONS.map((opt) => (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => setParam(op.id, key, opt)}
-                                  className={cn(
-                                    'flex-1 text-xs py-1 rounded-lg border transition-colors',
-                                    val === opt
-                                      ? 'border-accent-strong bg-accent-light text-foreground'
-                                      : 'border-border text-muted hover:border-accent-light'
-                                  )}
-                                >
-                                  {opt}
-                                </button>
-                              ))}
                             </div>
                           )
                         }

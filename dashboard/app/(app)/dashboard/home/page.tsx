@@ -1,7 +1,10 @@
 'use client'
 import Link from 'next/link'
+import useSWR from 'swr'
 import { useSession } from '@/app/lib/auth-client'
-import { FileText, Mic, Image as ImageIcon, Key, BookOpen } from 'lucide-react'
+import { getUsageAnalytics } from '@/app/http/usage'
+import { FileText, Mic, Key, BookOpen, CreditCard } from 'lucide-react'
+import type { ApiResponse, UsageAnalytics, UsageEvent } from '@/types'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -101,20 +104,18 @@ const TOOLS = [
   },
 ]
 
-const MOCK_JOBS = [
-  { id: '1', type: 'text', status: 'success', size: '18 KB to 11 KB', ratio: '1.6x', timestamp: 'Mar 17, 14:32' },
-  { id: '2', type: 'audio', status: 'success', size: '4.2 MB to 2.8 MB', ratio: '1.5x', timestamp: 'Mar 17, 13:15' },
-  { id: '3', type: 'text', status: 'success', size: '42 KB to 24 KB', ratio: '1.7x', timestamp: 'Mar 17, 11:58' },
-  { id: '4', type: 'audio', status: 'failed', size: '—', ratio: '—', timestamp: 'Mar 16, 22:10' },
-  { id: '5', type: 'text', status: 'success', size: '7 KB to 4 KB', ratio: '1.8x', timestamp: 'Mar 16, 19:44' },
-]
-
 const QUICK_STARTS = [
   {
     label: 'API Keys',
     description: 'Create and manage your API keys',
     href: '/dashboard/keys',
     icon: Key,
+  },
+  {
+    label: 'Billing',
+    description: 'Plans, invoices, and payment method',
+    href: '/dashboard/billing',
+    icon: CreditCard,
   },
   {
     label: 'API Reference',
@@ -126,9 +127,92 @@ const QUICK_STARTS = [
 
 /* ── Page ── */
 
+function formatBytes(bytes: number): string {
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+}
+
+function RecentActivity({ jobs }: { jobs: UsageEvent[] }) {
+  return (
+    <div className="flex flex-col min-h-0">
+      <h2 className="text-sm font-medium mb-3 shrink-0">Recent activity</h2>
+      <div className="space-y-1.5">
+        {jobs.map((job) => {
+          const ratio = job.inputBytes > 0 ? (job.inputBytes / job.outputBytes).toFixed(1) : '—'
+          return (
+            <div
+              key={job._id}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-background-section transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-background-section border border-border flex items-center justify-center shrink-0">
+                {job.pipelineType === 'text'
+                  ? <FileText className="w-3.5 h-3.5 text-muted" />
+                  : <Mic className="w-3.5 h-3.5 text-muted" />
+                }
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate capitalize">
+                  {job.pipelineType} compression
+                </p>
+                <p className="text-xs text-muted">
+                  {new Date(job.timestamp).toLocaleString('en-US', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                  })}
+                </p>
+              </div>
+
+              <div className="text-right shrink-0">
+                <p className="text-xs font-medium text-foreground">{ratio}x smaller</p>
+                <p className="text-xs text-muted">{formatBytes(job.inputBytes)} to {formatBytes(job.outputBytes)}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function QuickStart({ fullWidth }: { fullWidth?: boolean }) {
+  return (
+    <div className="flex flex-col h-full min-h-0">
+      <h2 className="text-sm font-medium mb-3 shrink-0">Quick start</h2>
+      <div className={`flex flex-1 gap-4 min-h-0 ${fullWidth ? 'flex-row' : 'flex-col'}`}>
+        {QUICK_STARTS.map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className={`flex flex-1 min-h-[4.5rem] items-center gap-4 px-4 py-5 rounded-xl border border-border bg-background hover:border-accent-strong/40 hover:shadow-sm transition-all group ${fullWidth ? '' : ''}`}
+          >
+            <div className="w-10 h-10 rounded-xl bg-accent-light flex items-center justify-center shrink-0">
+              <item.icon className="w-4.5 h-4.5 text-foreground" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">{item.label}</p>
+              <p className="text-xs text-muted mt-0.5">{item.description}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const { data: session } = useSession()
   const firstName = session?.user?.name?.split(' ')[0] ?? 'there'
+
+  const { data } = useSWR<ApiResponse<UsageAnalytics>>(
+    'usage-analytics-home',
+    () => getUsageAnalytics('30d'),
+  )
+
+  const recentJobs = data?.data?.recent ?? []
+  const hasActivity = recentJobs.length > 0
 
   return (
     <div className="h-full overflow-y-auto p-8">
@@ -141,7 +225,7 @@ export default function HomePage() {
         </div>
 
         {/* Tool portals */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-6 md:gap-8">
           {TOOLS.map((tool) => {
             const inner = (
               <div
@@ -179,70 +263,16 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* Bottom two-column section */}
-        <div className="grid grid-cols-2 gap-10">
-
-          {/* Recent activity */}
-          <div>
-            <h2 className="text-sm font-medium mb-3">Recent activity</h2>
-            <div className="space-y-0.5">
-              {MOCK_JOBS.map((job) => (
-                <div
-                  key={job.id}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-background-section transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-background-section border border-border flex items-center justify-center shrink-0">
-                    {job.type === 'text'
-                      ? <FileText className="w-3.5 h-3.5 text-muted" />
-                      : <Mic className="w-3.5 h-3.5 text-muted" />
-                    }
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate capitalize">
-                      {job.type} compression
-                    </p>
-                    <p className="text-xs text-muted">{job.timestamp}</p>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    {job.status === 'success' ? (
-                      <>
-                        <p className="text-xs font-medium text-foreground">{job.ratio} smaller</p>
-                        <p className="text-xs text-muted">{job.size}</p>
-                      </>
-                    ) : (
-                      <p className="text-xs text-red-500">Failed</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Bottom section — two columns if activity exists, full width quick start otherwise */}
+        {hasActivity ? (
+          <div className="grid grid-cols-2 gap-12 items-stretch">
+            <RecentActivity jobs={recentJobs} />
+            <QuickStart />
           </div>
+        ) : (
+          <QuickStart fullWidth />
+        )}
 
-          {/* Quick start */}
-          <div>
-            <h2 className="text-sm font-medium mb-3">Quick start</h2>
-            <div className="space-y-3">
-              {QUICK_STARTS.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-border bg-background hover:border-accent-strong/40 hover:shadow-sm transition-all group"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-accent-light flex items-center justify-center shrink-0">
-                    <item.icon className="w-4.5 h-4.5 text-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{item.label}</p>
-                    <p className="text-xs text-muted mt-0.5">{item.description}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
   )

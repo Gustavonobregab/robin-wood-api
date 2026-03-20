@@ -3,7 +3,7 @@ import { type ReactNode } from 'react'
 
 interface ToolLayoutProps {
   title: string
-  description: string
+  description?: string
   inputPanel: ReactNode
   outputPanel: ReactNode
   settingsPanel?: ReactNode
@@ -68,7 +68,9 @@ export function ToolLayout({ title, description, inputPanel, outputPanel, settin
             <div className="p-8">
               <div className="mb-5">
                 <h2 className="font-semibold">{title}</h2>
-                <p className="text-sm text-muted mt-0.5">{description}</p>
+                {description ? (
+                  <p className="text-sm text-muted mt-0.5">{description}</p>
+                ) : null}
               </div>
               {settingsPanel}
             </div>
@@ -77,7 +79,9 @@ export function ToolLayout({ title, description, inputPanel, outputPanel, settin
           <div className="p-8">
             <div className="mb-5">
               <h2 className="font-semibold">{title}</h2>
-              <p className="text-sm text-muted mt-0.5">{description}</p>
+              {description ? (
+                <p className="text-sm text-muted mt-0.5">{description}</p>
+              ) : null}
             </div>
             {settingsPanel}
           </div>
