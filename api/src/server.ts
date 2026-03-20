@@ -1,17 +1,18 @@
 
 import { Elysia } from 'elysia';
 import { connectDatabase } from './config/database';
-import { auth } from './config/auth';
 import { apiErrorPlugin } from './utils/api-error';
 import { cors } from '@elysiajs/cors';
+
+await connectDatabase();
+
+const { auth } = await import('./config/auth');
 const { keysRoutes } = await import('./modules/keys/keys.routes');
 const { usageRoutes } = await import('./modules/usage/usage.routes');
 const { usersRoutes } = await import('./modules/users/users.routes');
 const { audioRoutes } = await import('./modules/audio/audio.routes');
 const { textRoutes } = await import('./modules/text/text.routes');
 const { uploadRoutes } = await import('./modules/upload/upload.routes');
-
-await connectDatabase();
 
 const app = new Elysia()
   .use(cors({
