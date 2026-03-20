@@ -20,6 +20,7 @@ const jobSchema = new Schema(
     error: { type: String },
     result: {
       outputUrl: { type: String },
+      outputText: { type: String },
       metrics: { type: Schema.Types.Mixed },
     },
   },

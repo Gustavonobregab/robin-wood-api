@@ -26,11 +26,13 @@ export default function AudioPage() {
 
   async function handleSubmit() {
     if (!file) return toast.error('Please select an audio file')
+
     if (!canSubmit) return toast.error('Enable at least one operation')
     setJobId(null)
     setSubmitting(true)
     try {
       const uploadRes = await uploadAudio(file)
+
       const audioId = uploadRes.data.id
 
       const input =
@@ -39,6 +41,7 @@ export default function AudioPage() {
           : { audioId, operations: settings.operations }
 
       const res = await submitAudioJob(input)
+      
       setJobId(res.id)
     } catch {
       toast.error('Failed to submit job. Check your file and try again.')

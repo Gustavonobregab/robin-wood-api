@@ -60,6 +60,7 @@ export type JobPayload = AudioJobPayload | TextJobPayload | ImageJobPayload;
     error?: string;
     result?: {
       outputUrl?: string;
+      outputText?: string;
       metrics?: Record<string, unknown>;
     };
     createdAt: Date;
@@ -81,6 +82,7 @@ export type JobPayload = AudioJobPayload | TextJobPayload | ImageJobPayload;
     error?: string;
     result?: {
       outputUrl?: string;
+      outputText?: string;
       metrics?: Record<string, unknown>;
     };
   };

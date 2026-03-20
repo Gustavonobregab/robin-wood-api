@@ -24,6 +24,7 @@ export interface Job {
   }
   result?: {
     outputUrl?: string
+    outputText?: string
     metrics?: JobMetrics
   }
   error?: string

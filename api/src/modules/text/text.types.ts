@@ -24,14 +24,6 @@ export const TEXT_OPERATIONS = {
       intensity: { type: 'number', min: 0, max: 100, default: 50 },
     },
   },
-  'compress': {
-    name: 'Compress',
-    description: 'Simulate Gzip/Brotli',
-    params: {
-      algo: { type: 'string', default: 'gzip' },
-      intensity: { type: 'number', min: 0, max: 100, default: 50 },
-    },
-  },
   'json-to-toon': {
     name: 'JSON to Toon',
     description: 'Convert JSON blocks to TOON',
@@ -87,13 +79,6 @@ export const TextOperationSchema = t.Union([
   t.Object({
     type: t.Literal('minify'),
     params: t.Optional(t.Object({
-      intensity: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
-    })),
-  }),
-  t.Object({
-    type: t.Literal('compress'),
-    params: t.Optional(t.Object({
-      algo: t.Optional(t.Union([t.Literal('gzip'), t.Literal('brotli')])),
       intensity: t.Optional(t.Number({ minimum: 0, maximum: 100 })),
     })),
   }),

@@ -9,6 +9,7 @@ interface AudioFileInputProps {
 }
 
 const ACCEPTED = '.mp3,.wav'
+
 const MAX_SIZE_MB = 100
 
 export function AudioFileInput({ file, onChange }: AudioFileInputProps) {

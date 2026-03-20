@@ -18,12 +18,21 @@ export default function TextPage() {
   const [settings, setSettings] = useState<TextSettings>({ mode: 'custom', operations: [] })
   const [jobId, setJobId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [syncResult, setSyncResult] = useState<{ output: string; metrics: Record<string, unknown> } | null>(null)
+  const [output, setOutput] = useState<{ text: string; metrics: JobMetrics } | null>(null)
 
   const { job, isPolling, isFailed, timedOut } = useJobPoll({
     jobId,
     fetcher: getTextJobStatus,
   })
+
+  useEffect(() => {
+    if (job?.status === 'completed' && job.result?.outputText) {
+      setOutput({
+        text: job.result.outputText,
+        metrics: job.result.metrics as JobMetrics,
+      })
+    }
+  }, [job?.status, job?.result?.outputText]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const canSubmit =
     settings.mode === 'preset' ||
@@ -36,7 +45,7 @@ export default function TextPage() {
     if (!canSubmit) return toast.error('Enable at least one operation')
 
     setJobId(null)
-    setSyncResult(null)
+    setOutput(null)
     setSubmitting(true)
 
     try {
@@ -57,7 +66,7 @@ export default function TextPage() {
       const data = res.data as any
 
       if (data.sync) {
-        setSyncResult({ output: data.output, metrics: data.metrics })
+        setOutput({ text: data.output, metrics: data.metrics as JobMetrics })
       } else {
         setJobId(data.job.id)
       }
@@ -72,9 +81,24 @@ export default function TextPage() {
     if (isFailed) toast.error(job?.error ?? 'Job failed')
   }, [isFailed]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const displayStatus = syncResult ? 'completed' : job?.status
+  const displayStatus = output ? 'completed' : job?.status
+  const displayMetrics = output?.metrics ?? (job?.result?.metrics as JobMetrics | undefined)
 
-  const displayMetrics = (syncResult?.metrics ?? job?.result?.metrics) as JobMetrics | undefined
+  function copyOutput() {
+    if (!output) return
+    navigator.clipboard.writeText(output.text)
+  }
+
+  function downloadOutput() {
+    if (!output) return
+    const blob = new Blob([output.text], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'output.txt'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <ToolLayout
@@ -110,11 +134,38 @@ export default function TextPage() {
             error={job?.error}
             timedOut={timedOut}
           />
-          {syncResult?.output && (
-            <div className="mt-4 p-4 bg-background-section rounded-lg">
-              <p className="text-xs font-medium text-muted mb-2">Output</p>
-              <pre className="text-sm whitespace-pre-wrap break-words max-h-64 overflow-y-auto">
-                {syncResult.output}
+          {output && (
+            <div className="mt-4 rounded-lg border border-border overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 bg-background-section border-b border-border">
+                <span className="text-xs font-medium text-muted">Output</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={copyOutput}
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-muted hover:text-foreground rounded transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                    </svg>
+                    Copy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={downloadOutput}
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-muted hover:text-foreground rounded transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" x2="12" y1="15" y2="3" />
+                    </svg>
+                    Download
+                  </button>
+                </div>
+              </div>
+              <pre className="text-sm whitespace-pre-wrap break-words max-h-72 overflow-y-auto p-3">
+                {output.text}
               </pre>
             </div>
           )}

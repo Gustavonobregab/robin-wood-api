@@ -82,6 +82,7 @@ export default async function (job: Job<TextQueueJob>) {
       status: 'completed',
       completedAt: new Date(),
       result: {
+        outputText: output,
         metrics: {
           inputSize,
           outputSize,
