@@ -15,7 +15,7 @@ export default function SignInPage() {
     try {
       await signIn.social({
         provider: 'google',
-        callbackURL: callbackUrl,
+        callbackURL: new URL(callbackUrl, window.location.origin).toString(),
       })
     } catch {
       toast.error('Could not sign in with Google. Try again.')
