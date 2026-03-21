@@ -16,7 +16,7 @@ const { uploadRoutes } = await import('./modules/upload/upload.routes');
 
 const app = new Elysia()
   .use(cors({
-      origin: ['http://localhost:3000', 'http://localhost:3333', 'http://localhost:3002'],
+      origin: ['http://localhost:3000', 'http://localhost:3333', 'http://localhost:3002', 'https://robin-dashboard-amber.vercel.app'],
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
