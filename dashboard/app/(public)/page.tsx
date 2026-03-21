@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Hero } from '@/app/components/landing/Hero'
 import { TrustedBy } from '@/app/components/landing/TrustedBy'
 import { Features } from '@/app/components/landing/Features'
