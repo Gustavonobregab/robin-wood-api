@@ -18,19 +18,9 @@ export const auth = betterAuth({
   clientURL,
   trustedOrigins: [clientURL],
   advanced: {
-    cookies: {
-      state: {
-        attributes: {
-          sameSite: 'none',
-          secure: true,
-        },
-      },
-      session_token: {
-        attributes: {
-          sameSite: 'none',
-          secure: true,
-        },
-      },
+    defaultCookieAttributes: {
+      sameSite: 'lax',
+      secure: true,
     },
   },
   socialProviders: {

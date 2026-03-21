@@ -32,7 +32,11 @@
       "Bash(ffmpeg -f lavfi -i \"sine=frequency=440:duration=1\" -af \"silenceremove=start_periods=1:start_duration=0:start_threshold=-25dB:stop_periods=-1:stop_duration=0.5:stop_threshold=-25dB\" -f null -)",
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
       "Bash(cat:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "WebFetch(domain:better-auth.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:station.railway.com)"
     ]
   },
   "enabledPlugins": {
