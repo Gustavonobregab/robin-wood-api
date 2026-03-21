@@ -26,9 +26,9 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="h-full overflow-y-auto p-6">
+      <div className="h-full overflow-y-auto p-4 sm:p-6">
         <div className="space-y-6 max-w-4xl mx-auto">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Skeleton className="h-24 rounded-xl" />
             <Skeleton className="h-24 rounded-xl" />
             <Skeleton className="h-24 rounded-xl" />
@@ -41,9 +41,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6">
       <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard label="Total Requests" value={analytics?.summary.totalRequests ?? 0} />
           <StatCard
             label="Data Processed"

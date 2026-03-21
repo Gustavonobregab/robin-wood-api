@@ -56,7 +56,7 @@ export default function KeysPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6">
     <div className="space-y-5 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
@@ -153,6 +153,7 @@ export default function KeysPage() {
         </div>
       ) : (
         <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -218,6 +219,7 @@ export default function KeysPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </div>
       )}
     </div>

@@ -12,7 +12,7 @@ export default function AccountPage() {
   const user = session?.user
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6">
     <div className="space-y-8 max-w-xl mx-auto">
       {/* Profile */}
       <div className="bg-background rounded-xl border border-border shadow-sm p-6">

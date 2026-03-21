@@ -39,37 +39,39 @@ export function RecentJobsTable({ jobs }: RecentJobsTableProps) {
   }
 
   const totalPages = Math.ceil(jobs.length / PER_PAGE)
-  
+
   const paged = jobs.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   return (
     <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Type</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Latency</TableHead>
-            <TableHead>Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paged.map((job) => (
-            <TableRow key={job._id}>
-              <TableCell className="font-medium capitalize">{job.pipelineType}</TableCell>
-              <TableCell className="text-muted text-sm">
-                {formatBytes(job.inputBytes)} to {formatBytes(job.outputBytes)}
-              </TableCell>
-              <TableCell className="text-muted text-sm">{job.processingMs}ms</TableCell>
-              <TableCell className="text-muted text-sm">
-                {new Date(job.timestamp).toLocaleString('en-US', {
-                  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-                })}
-              </TableCell>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Type</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead>Latency</TableHead>
+              <TableHead>Date</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {paged.map((job) => (
+              <TableRow key={job._id}>
+                <TableCell className="font-medium capitalize">{job.pipelineType}</TableCell>
+                <TableCell className="text-muted text-sm whitespace-nowrap">
+                  {formatBytes(job.inputBytes)} to {formatBytes(job.outputBytes)}
+                </TableCell>
+                <TableCell className="text-muted text-sm">{job.processingMs}ms</TableCell>
+                <TableCell className="text-muted text-sm whitespace-nowrap">
+                  {new Date(job.timestamp).toLocaleString('en-US', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                  })}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       <div className="py-2">
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>

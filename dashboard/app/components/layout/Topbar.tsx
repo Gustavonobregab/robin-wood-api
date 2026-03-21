@@ -2,9 +2,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from '@/app/lib/auth-client'
-import { MessageSquare } from 'lucide-react'
+import { Menu, MessageSquare } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/app/components/ui/avatar'
 import { useChat } from '@/app/components/layout/ChatContext'
+import { useSidebar } from '@/app/components/layout/SidebarContext'
 import { soonBadgeClassName } from '@/app/components/layout/soon-badge'
 import { cn } from '@/app/lib/utils'
 
@@ -23,17 +24,27 @@ export function Topbar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const { chatOpen, toggleChat } = useChat()
+  const { toggleMobile } = useSidebar()
   const title = PAGE_TITLES[pathname] ?? 'Dashboard'
   const initials = session?.user?.name?.slice(0, 2).toUpperCase() ?? 'U'
 
   return (
-    <header className="h-14 bg-background border-b border-border flex items-center justify-between px-10 flex-shrink-0">
-      <div className="flex items-center min-w-0">
+    <header className="h-14 bg-background border-b border-border flex items-center justify-between px-4 sm:px-6 md:px-10 flex-shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Mobile hamburger */}
+        <button
+          type="button"
+          onClick={toggleMobile}
+          className="md:hidden p-1.5 text-foreground -ml-1"
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         <h1 className="font-semibold text-base truncate">{title}</h1>
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5">
+        <div className="hidden sm:flex items-center gap-1.5">
           <button
             type="button"
             onClick={toggleChat}

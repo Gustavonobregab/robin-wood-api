@@ -13,7 +13,7 @@ const IMAGE_PRESETS = [
 
 export default function ImagePage() {
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6">
     <div className="space-y-5 max-w-5xl mx-auto">
       <div className="flex items-center gap-3">
         <div>
@@ -25,7 +25,7 @@ export default function ImagePage() {
         <Badge className="bg-accent-light text-foreground border-0 rounded-full">Coming soon</Badge>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 opacity-60 pointer-events-none select-none">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-60 pointer-events-none select-none">
         <div className="bg-background rounded-xl border border-border shadow-sm p-5">
           <div className="space-y-1.5">
             <Label>Image file URL</Label>

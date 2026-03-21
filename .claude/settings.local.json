@@ -36,7 +36,8 @@
       "WebFetch(domain:better-auth.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:vercel.com)",
-      "WebFetch(domain:station.railway.com)"
+      "WebFetch(domain:station.railway.com)",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(data[0][''''text'''']\\)\")"
     ]
   },
   "enabledPlugins": {

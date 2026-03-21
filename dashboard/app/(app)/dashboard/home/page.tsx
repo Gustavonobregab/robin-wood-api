@@ -215,8 +215,8 @@ export default function HomePage() {
   const hasActivity = recentJobs.length > 0
 
   return (
-    <div className="h-full overflow-y-auto p-8">
-      <div className="max-w-5xl mx-auto space-y-10">
+    <div className="h-full overflow-y-auto p-4 sm:p-6 md:p-8">
+      <div className="max-w-5xl mx-auto space-y-8 md:space-y-10">
 
         {/* Greeting */}
         <div>
@@ -225,7 +225,7 @@ export default function HomePage() {
         </div>
 
         {/* Tool portals */}
-        <div className="grid grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {TOOLS.map((tool) => {
             const inner = (
               <div
@@ -265,7 +265,7 @@ export default function HomePage() {
 
         {/* Bottom section: two columns if activity exists, full width quick start otherwise */}
         {hasActivity ? (
-          <div className="grid grid-cols-2 gap-12 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <RecentActivity jobs={recentJobs} />
             <QuickStart />
           </div>
