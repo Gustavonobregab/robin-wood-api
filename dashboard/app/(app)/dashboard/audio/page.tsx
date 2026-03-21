@@ -6,6 +6,7 @@ import { ToolLayout } from '@/app/components/tools/ToolLayout'
 import { AudioFileInput } from '@/app/components/tools/AudioFileInput'
 import { MetricsPanel } from '@/app/components/tools/MetricsPanel'
 import { AudioSettingsPanel, type AudioSettings } from '@/app/components/tools/AudioSettingsPanel'
+import { ToolHistoryPanel } from '@/app/components/tools/ToolHistoryPanel'
 import { useJobPoll } from '@/app/hooks/use-job-poll'
 import { uploadAudio, submitAudioJob } from '@/app/http/audio'
 import { getAudioJobStatus } from '@/app/http/jobs'
@@ -65,15 +66,17 @@ export default function AudioPage() {
       }
       settingsPanel={<AudioSettingsPanel value={settings} onChange={setSettings} />}
       historyPanel={
-        <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-4">
-            <path d="M9 18V5l12-2v13" />
-            <circle cx="6" cy="18" r="3" />
-            <circle cx="18" cy="16" r="3" />
-          </svg>
-          <p className="font-medium text-foreground">Your processed audio will appear here</p>
-          <p className="text-sm text-muted mt-1">Submit a job to see your history</p>
-        </div>
+        <ToolHistoryPanel
+          pipelineType="audio"
+          emptyIcon={
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted mb-4">
+              <path d="M9 18V5l12-2v13" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+          }
+          emptyLabel="Your processed audio will appear here"
+        />
       }
       outputPanel={
         <MetricsPanel

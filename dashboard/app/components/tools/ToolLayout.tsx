@@ -1,5 +1,6 @@
 'use client'
-import { type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { cn } from '@/app/lib/utils'
 
 interface ToolLayoutProps {
   title: string
@@ -13,6 +14,7 @@ interface ToolLayoutProps {
 }
 
 export function ToolLayout({ title, description, inputPanel, outputPanel, settingsPanel, historyPanel, action, credits }: ToolLayoutProps) {
+  const [tab, setTab] = useState<'settings' | 'history'>('settings')
   const hasTabs = !!historyPanel
 
   return (
@@ -51,29 +53,47 @@ export function ToolLayout({ title, description, inputPanel, outputPanel, settin
         {hasTabs ? (
           <>
             <div className="flex gap-6 px-8 pt-6 border-b border-border">
-              <div className="pb-3 text-sm font-medium border-b-2 -mb-px border-foreground text-foreground">
+              <button
+                type="button"
+                onClick={() => setTab('settings')}
+                className={cn(
+                  'pb-3 text-sm font-medium border-b-2 -mb-px transition-colors',
+                  tab === 'settings'
+                    ? 'border-foreground text-foreground'
+                    : 'border-transparent text-muted hover:text-foreground'
+                )}
+              >
                 Settings
-              </div>
-              <span
-                className="pb-3 text-sm font-medium border-b-2 -mb-px border-transparent text-muted/50 cursor-not-allowed inline-flex items-center gap-2"
-                aria-disabled
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab('history')}
+                className={cn(
+                  'pb-3 text-sm font-medium border-b-2 -mb-px transition-colors',
+                  tab === 'history'
+                    ? 'border-foreground text-foreground'
+                    : 'border-transparent text-muted hover:text-foreground'
+                )}
               >
                 History
-                <span className="text-[10px] font-semibold uppercase tracking-wider bg-background-section text-muted px-1.5 py-0.5 rounded-md">
-                  Soon
-                </span>
-              </span>
+              </button>
             </div>
 
-            <div className="p-8">
-              <div className="mb-5">
-                <h2 className="font-semibold">{title}</h2>
-                {description ? (
-                  <p className="text-sm text-muted mt-0.5">{description}</p>
-                ) : null}
+            {tab === 'settings' ? (
+              <div className="p-8">
+                <div className="mb-5">
+                  <h2 className="font-semibold">{title}</h2>
+                  {description ? (
+                    <p className="text-sm text-muted mt-0.5">{description}</p>
+                  ) : null}
+                </div>
+                {settingsPanel}
               </div>
-              {settingsPanel}
-            </div>
+            ) : (
+              <div className="p-8">
+                {historyPanel}
+              </div>
+            )}
           </>
         ) : (
           <div className="p-8">
