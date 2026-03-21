@@ -5,14 +5,28 @@ import mongoose from "mongoose";
 const googleId = process.env.GOOGLE_CLIENT_ID;
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-const baseURL = process.env.BETTER_AUTH_URL || 'http://localhost:3002';
-const clientURL = process.env.CLIENT_URL || 'http://localhost:3333';
+const baseURL = process.env.BETTER_AUTH_URL;
+const clientURL = process.env.CLIENT_URL;
+
+if (!baseURL || !clientURL) {
+  throw new Error('BETTER_AUTH_URL and CLIENT_URL must be set');
+}
 
 export const auth = betterAuth({
   database: mongodbAdapter(mongoose.connection.db as any),
   baseURL,
   clientURL,
   trustedOrigins: [clientURL],
+  advanced: {
+    cookies: {
+      state: {
+        attributes: {
+          sameSite: 'none',
+          secure: true,
+        },
+      },
+    },
+  },
   socialProviders: {
     google: {
       clientId: googleId as string,
