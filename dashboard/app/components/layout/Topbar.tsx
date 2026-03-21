@@ -5,6 +5,7 @@ import { useSession } from '@/app/lib/auth-client'
 import { MessageSquare } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/app/components/ui/avatar'
 import { useChat } from '@/app/components/layout/ChatContext'
+import { soonBadgeClassName } from '@/app/components/layout/soon-badge'
 import { cn } from '@/app/lib/utils'
 
 const PAGE_TITLES: Record<string, string> = {
@@ -32,18 +33,22 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          onClick={toggleChat}
-          aria-label={chatOpen ? 'Close chat' : 'Open chat'}
-          className={cn(
-            'w-8 h-8 flex items-center justify-center rounded-lg transition-colors',
-            chatOpen
-              ? 'bg-accent-light text-foreground'
-              : 'text-muted hover:bg-background-section hover:text-foreground'
-          )}
-        >
-          <MessageSquare className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={toggleChat}
+            aria-label={chatOpen ? 'Close chat' : 'Open chat'}
+            className={cn(
+              'w-8 h-8 flex items-center justify-center rounded-lg transition-colors',
+              chatOpen
+                ? 'bg-accent-light text-foreground'
+                : 'text-muted hover:bg-background-section hover:text-foreground'
+            )}
+          >
+            <MessageSquare className="w-4 h-4" />
+          </button>
+          <span className={soonBadgeClassName}>Soon</span>
+        </div>
 
         <Link
           href="/dashboard/account"

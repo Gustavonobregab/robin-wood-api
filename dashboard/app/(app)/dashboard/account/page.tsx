@@ -4,11 +4,6 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/app/components/ui/button'
 import { Input } from '@/app/components/ui/input'
 import { Label } from '@/app/components/ui/label'
-import { Separator } from '@/app/components/ui/separator'
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from '@/app/components/ui/alert-dialog'
 import { useSession, signOut } from '@/app/lib/auth-client'
 
 export default function AccountPage() {
@@ -45,34 +40,6 @@ export default function AccountPage() {
         >
           Sign out
         </Button>
-      </div>
-
-      {/* Danger zone */}
-      <div className="bg-background rounded-xl border border-red-200 shadow-sm p-6">
-        <h2 className="font-semibold mb-1 text-red-600">Danger zone</h2>
-        <p className="text-sm text-muted mb-4">Permanently delete your account and all data.</p>
-        <Separator className="mb-4" />
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
-              Delete account
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete account?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action is not yet available. Contact support to delete your account.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction disabled className="opacity-50">
-                Delete — coming soon
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </div>
     </div>

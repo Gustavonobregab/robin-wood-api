@@ -17,7 +17,7 @@ const log = (jobId: string, msg: string) => console.log(`[TEXT:${jobId}] ${msg}`
 async function resolveInput(id: string, source: JobSource): Promise<string> {
   switch (source.kind) {
     case 'inline':
-      log(id, `Inline text — ${kb(source.text)}KB`);
+      log(id, `Inline text: ${kb(source.text)}KB`);
       return source.text;
 
     case 'storage':
@@ -97,7 +97,7 @@ export default async function (job: Job<TextQueueJob>) {
     const input = await resolveInput(id, payload.source);
 
     const inputSize = new TextEncoder().encode(input).byteLength;
-    log(id, `Input ready — ${kb(input)}KB`);
+    log(id, `Input ready: ${kb(input)}KB`);
 
     log(id, 'Processing pipeline...');
     const output = await processText(input, payload.operations);
@@ -106,7 +106,7 @@ export default async function (job: Job<TextQueueJob>) {
 
     const ratio = +(inputSize / outputSize).toFixed(2);
     
-    log(id, `Done — ${kb(input)}KB to ${kb(output)}KB (ratio: ${ratio}x)`);
+    log(id, `Done: ${kb(input)}KB to ${kb(output)}KB (ratio: ${ratio}x)`);
 
     const result = await persistOutput(id, output, payload.source.kind === 'storage');
 
@@ -140,7 +140,7 @@ export default async function (job: Job<TextQueueJob>) {
         encoding: 'utf-8',
       },
     });
-    log(id, `Usage recorded — ${input.length} chars`);
+    log(id, `Usage recorded: ${input.length} chars`);
   } catch (err) {
     log(id, `Failed: ${err instanceof Error ? err.message : err}`);
     await JobModel.findByIdAndUpdate(id, {

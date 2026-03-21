@@ -35,7 +35,7 @@ export function MetricsPanel({ status, metrics, outputUrl, error, timedOut }: Me
         <Skeleton className="h-4 w-1/2 rounded" />
         <Skeleton className="h-4 w-3/4 rounded" />
         <Skeleton className="h-4 w-1/3 rounded" />
-        <p className="text-xs text-muted mt-2">Processing…</p>
+        <p className="text-xs text-muted mt-2">Processing...</p>
       </div>
     )
   }

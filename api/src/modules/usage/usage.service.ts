@@ -97,7 +97,7 @@ export class UsageService {
       };
     }
 
-    // Chart — daily request counts
+    // Chart: daily request counts
     const chartMap = new Map<string, number>();
     let loopDate = new Date(startDate);
     while (loopDate <= now) {
@@ -112,7 +112,7 @@ export class UsageService {
     });
     const chart = Array.from(chartMap.entries()).map(([date, requests]) => ({ date, requests }));
 
-    // Recent — last 10 raw events
+    // Recent: last 10 raw events
     const recent = events.slice(0, 10) as unknown as UsageEvent[];
 
     return {

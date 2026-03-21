@@ -191,7 +191,7 @@ export default function TextPage() {
           disabled={submitting || isPolling || !canSubmit || !hasInput}
           className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light"
         >
-          {submitting ? 'Processing…' : isPolling ? 'Processing…' : 'Compress'}
+          {submitting ? 'Processing...' : isPolling ? 'Processing...' : 'Compress'}
         </Button>
       }
     />

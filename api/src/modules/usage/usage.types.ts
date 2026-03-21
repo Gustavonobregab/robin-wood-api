@@ -2,7 +2,7 @@ import type { ObjectId } from 'mongoose';
 
 export type PipelineType = 'audio' | 'text' | 'image' | 'video';
 
-// --- Per-pipeline metadata ---
+// Per-pipeline metadata
 
 export interface AudioMetadata {
   durationMs: number;
@@ -33,7 +33,7 @@ export interface VideoMetadata {
   codec: string;
 }
 
-// --- UsageEvent document ---
+// UsageEvent document
 
 export interface UsageEvent {
   _id: ObjectId;
@@ -52,7 +52,7 @@ export interface UsageEvent {
   video?: VideoMetadata;
 }
 
-// --- Service input/output ---
+// Service input/output
 
 export interface RecordUsageInput {
   idempotencyKey: string;
@@ -73,7 +73,7 @@ export interface RecordUsageResult {
   eventId: string;
 }
 
-// --- Analytics ---
+// Analytics
 
 export type TimeRange = '7d' | '30d' | '90d' | '1y';
 
@@ -124,5 +124,5 @@ export interface CurrentUsage {
   video: { requests: number; minutes: number; inputBytes: number };
 }
 
-// Default free tier (500MB) — kept for users.model.ts schema default
+// Default free tier (500MB); kept for users.model.ts schema default
 export const DEFAULT_TOKENS_LIMIT = 500_000_000;

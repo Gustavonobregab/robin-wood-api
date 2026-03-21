@@ -129,7 +129,7 @@ export default function KeysPage() {
                   onClick={handleCreate}
                   disabled={creating || !newKeyName.trim()}
                 >
-                  {creating ? 'Creating…' : 'Create key'}
+                  {creating ? 'Creating...' : 'Create key'}
                 </Button>
               </>
             )}
@@ -184,7 +184,7 @@ export default function KeysPage() {
                     {new Date(key.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-muted text-sm">
-                    {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : '—'}
+                    {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : 'Never'}
                   </TableCell>
                   <TableCell>
                     {key.status === 'active' && (

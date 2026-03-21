@@ -27,7 +27,7 @@ export function Features() {
 
         {/* Two large feature cards */}
         <div className="grid grid-cols-5 gap-4 mb-4">
-          {/* Card 1 — API Pipeline (spans 3) with gradient + noise */}
+          {/* Card 1: API Pipeline (spans 3) with gradient + noise */}
           <div className="col-span-3 relative rounded-2xl overflow-hidden flex flex-col" style={{ background: 'linear-gradient(135deg, #A0C878 0%, #DDEB9D 40%, #FFFDF6 70%, #A0C878 100%)' }}>
             {/* Noise overlay */}
             <div
@@ -59,19 +59,19 @@ export function Features() {
               <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/30">
                 <div className="flex items-center gap-2 text-xs font-mono">
                   <span className="text-emerald-700 font-semibold">200</span>
-                  <span className="text-foreground/60">→ compressionRatio: 0.42 · tokensSaved: 1,248</span>
+                  <span className="text-foreground/60">compressionRatio: 0.42 · tokensSaved: 1,248</span>
                 </div>
               </div>
             </div>
             <div className="relative z-10 px-8 pb-8">
               <h3 className="font-semibold text-lg mb-1 text-foreground">Unified API pipeline</h3>
               <p className="text-sm text-foreground/70 leading-relaxed">
-                Chain multiple operations in a single API call. Trim, compress, normalize — built on our optimized processing engine.
+                Chain multiple operations in a single API call. Trim, compress, normalize, built on our optimized processing engine.
               </p>
             </div>
           </div>
 
-          {/* Card 2 — Smart compression (spans 2) */}
+          {/* Card 2: Smart compression (spans 2) */}
           <div className="col-span-2 bg-background rounded-2xl border border-border flex flex-col">
             <div className="flex-1 p-8">
               <div className="text-sm text-muted leading-relaxed space-y-3">

@@ -17,7 +17,7 @@ export const trim: TextOperationHandler<'trim'> = {
       result = result.replace(/([.,;:!?])(?=[A-Za-z])/g, '$1 ');
     }
 
-    // Higher intensity: normalize unicode quotes and dashes
+    // Higher intensity: normalize unicode quotes; collapse dash variants to space
     if (params.intensity > 60) {
       result = result.replace(/[""]/g, '"');
       result = result.replace(/['']/g, "'");

@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
       }
     }
   } catch {
-    // API unreachable — redirect to sign-in
+    // API unreachable: redirect to sign-in
   }
 
   const signInUrl = new URL('/sign-in', request.url)

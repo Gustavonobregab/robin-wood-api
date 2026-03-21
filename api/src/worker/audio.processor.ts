@@ -60,7 +60,7 @@ export default async function (job: Job<AudioQueueJob>) {
 
     // Extract audio metadata before processing
     const probeResult = await probeAudio(inputPath);
-    log(id, `Probed — ${(probeResult.durationMs / 1000).toFixed(1)}s, ${probeResult.sampleRate}Hz, ${probeResult.channels}ch`);
+    log(id, `Probed: ${(probeResult.durationMs / 1000).toFixed(1)}s, ${probeResult.sampleRate}Hz, ${probeResult.channels}ch`);
 
     // Process
     log(id, 'Processing pipeline...');
@@ -70,7 +70,7 @@ export default async function (job: Job<AudioQueueJob>) {
     const outputSize = outputFile.size;
 
     const ratio = (inputSize / outputSize).toFixed(2);
-    log(id, `Done — ${(inputSize / 1024 / 1024).toFixed(2)}MB to ${(outputSize / 1024 / 1024).toFixed(2)}MB (ratio: ${ratio}x)`);
+    log(id, `Done: ${(inputSize / 1024 / 1024).toFixed(2)}MB to ${(outputSize / 1024 / 1024).toFixed(2)}MB (ratio: ${ratio}x)`);
 
     // Upload output to S3
     const outputKey = `outputs/${id}/result.mp3`;
@@ -86,9 +86,7 @@ export default async function (job: Job<AudioQueueJob>) {
 
     log(id, `Uploaded output to S3: ${outputKey}`);
 
-    // Generate presigned URL — 72h from now (effectively aligned with S3 lifecycle
-    
-    // since this runs immediately after PutObject; the object and URL expire ~same time)
+    // Generate presigned URL (72h; aligned with S3 lifecycle since PutObject runs first)
     const outputUrl = await getSignedUrl(
       s3,
       new GetObjectCommand({ Bucket: S3_BUCKET, Key: outputKey }),

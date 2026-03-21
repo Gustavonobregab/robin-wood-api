@@ -32,7 +32,7 @@ function TextVisual() {
         ))}
       </div>
 
-      {/* "After" document — shorter lines */}
+      {/* "After" document: shorter lines */}
       <div className="bg-background rounded-lg shadow-sm px-3 py-2.5 space-y-1.5 w-16">
         {[100, 75, 90, 60].map((w, i) => (
           <div key={i} className="h-1.5 rounded-full bg-accent-strong/50" style={{ width: `${w}%` }} />
@@ -141,7 +141,7 @@ function RecentActivity({ jobs }: { jobs: UsageEvent[] }) {
       <h2 className="text-sm font-medium mb-3 shrink-0">Recent activity</h2>
       <div className="space-y-1.5">
         {jobs.map((job) => {
-          const ratio = job.inputBytes > 0 ? (job.inputBytes / job.outputBytes).toFixed(1) : '—'
+          const ratio = job.inputBytes > 0 ? (job.inputBytes / job.outputBytes).toFixed(1) : 'n/a'
           return (
             <div
               key={job._id}
@@ -263,7 +263,7 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* Bottom section — two columns if activity exists, full width quick start otherwise */}
+        {/* Bottom section: two columns if activity exists, full width quick start otherwise */}
         {hasActivity ? (
           <div className="grid grid-cols-2 gap-12 items-stretch">
             <RecentActivity jobs={recentJobs} />

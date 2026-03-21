@@ -122,7 +122,7 @@ export function Hero() {
                           ))}
                         </div>
                       </div>
-                      <p className="text-sm text-foreground font-medium">Duration: 12:34 → 8:21 (34% shorter)</p>
+                      <p className="text-sm text-foreground font-medium">Duration: 12:34 to 8:21 (34% shorter)</p>
                     </div>
                   </div>
                 </div>

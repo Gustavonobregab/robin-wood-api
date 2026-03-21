@@ -85,7 +85,7 @@ export default function BillingPage() {
           <h3 className="font-medium mb-1">Upgrade to Pro</h3>
           <p className="text-sm text-muted mb-4">Priority processing and higher limits. $19/mo.</p>
           <Button disabled className="rounded-full bg-accent-strong text-foreground opacity-50 cursor-not-allowed">
-            Upgrade — coming soon
+            Upgrade: coming soon
           </Button>
         </div>
       </div>

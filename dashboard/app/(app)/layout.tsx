@@ -15,7 +15,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         chatOpen ? 'bg-foreground/9' : 'bg-background'
       )}
     >
-      {/* Main app — compresses and gets rounded when chat is open */}
+      {/* Main app: compresses and gets rounded when chat is open */}
       <div
         className={cn(
           'flex flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out',
@@ -31,7 +31,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Chat panel — slides in from right */}
+      {/* Chat panel: slides in from right */}
       <div
         className={cn(
           'shrink-0 overflow-hidden transition-all duration-300 ease-in-out',

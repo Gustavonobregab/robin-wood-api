@@ -90,7 +90,7 @@ export default function AudioPage() {
           disabled={submitting || isPolling || !canSubmit}
           className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light"
         >
-          {submitting ? 'Uploading…' : isPolling ? 'Processing…' : 'Process audio'}
+          {submitting ? 'Uploading...' : isPolling ? 'Processing...' : 'Process audio'}
         </Button>
       }
     />

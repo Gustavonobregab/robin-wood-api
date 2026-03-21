@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { soonBadgeClassName } from '@/app/components/layout/soon-badge'
 import { cn } from '@/app/lib/utils'
 import type { LucideIcon } from 'lucide-react'
 
@@ -31,9 +32,7 @@ export function NavItem({ href, icon: Icon, label, collapsed, disabled, badge }:
           <>
             <span>{label}</span>
             {badge && (
-              <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider bg-background-section text-muted px-1.5 py-0.5 rounded-md">
-                {badge}
-              </span>
+              <span className={cn('ml-auto', soonBadgeClassName)}>{badge}</span>
             )}
           </>
         )}

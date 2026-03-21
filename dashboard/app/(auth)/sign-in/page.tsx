@@ -32,7 +32,7 @@ export default function SignInPage() {
         className="w-full rounded-full bg-accent-strong text-foreground hover:bg-accent-light"
         disabled={loading}
       >
-        {loading ? 'Redirecting…' : 'Continue with Google'}
+        {loading ? 'Redirecting...' : 'Continue with Google'}
       </Button>
     </div>
   )
