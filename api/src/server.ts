@@ -13,6 +13,7 @@ const { usersRoutes } = await import('./modules/users/users.routes');
 const { audioRoutes } = await import('./modules/audio/audio.routes');
 const { textRoutes } = await import('./modules/text/text.routes');
 const { uploadRoutes } = await import('./modules/upload/upload.routes');
+const { plansRoutes } = await import('./modules/plans/plans.routes');
 
 const app = new Elysia()
   .use(cors({
@@ -29,4 +30,5 @@ const app = new Elysia()
   .use(audioRoutes)
   .use(textRoutes)
   .use(uploadRoutes)
+  .use(plansRoutes)
   app.listen(3002);
