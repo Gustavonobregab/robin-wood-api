@@ -32,8 +32,8 @@ export const textRoutes = new Elysia({ prefix: '/text' })
 
   .get(
     '/jobs/:id',
-    async ({ params: { id } }) => {
-      const job = await jobService.getStatus(id);
+    async ({ params: { id }, userId }) => {
+      const job = await jobService.getStatus(userId, id);
 
       if (!job) {
         throw new ApiError('JOB_NOT_FOUND', 'Job not found', 404);

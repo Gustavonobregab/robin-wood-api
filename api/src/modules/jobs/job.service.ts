@@ -17,8 +17,8 @@ export class JobService {
     return doc ? this.toJob(doc) : null;
   }
 
-  async getStatus(jobId: string): Promise<JobStatusView | null> {
-    const doc = await JobModel.findById(jobId);
+  async getStatus(userId: string, jobId: string): Promise<JobStatusView | null> {
+    const doc = await JobModel.findOne({ _id: jobId, userId });
     if (!doc) return null;
 
     return {

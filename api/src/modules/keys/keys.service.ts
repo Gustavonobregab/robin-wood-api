@@ -84,6 +84,7 @@ export class KeysService {
       valid: true,
       userId: keyRecord.userId,
       keyName: keyRecord.name,
+      keyId: keyRecord._id.toString(),
     };
   }
 
