@@ -208,6 +208,31 @@ export interface SubmitAudioJobInput {
   operations?: AudioOperationInput[]
 }
 
+// ─── Billing ─────────────────────────────────────────────────
+export interface PlanSummary {
+  name: string
+  slug: string
+  credits: number
+}
+
+export interface SubscriptionSummary {
+  status: 'active' | 'canceled'
+  credits: { limit: number; used: number }
+  currentPeriodStart: string
+  currentPeriodEnd: string
+}
+
+export interface UserProfile {
+  name: string
+  email: string
+  image?: string
+  createdAt: string
+  totalRequests: number
+  plan: PlanSummary | null
+  subscription: SubscriptionSummary | null
+  currentUsage: CurrentUsage
+}
+
 // ─── Auth ─────────────────────────────────────────────────────
 export interface User {
   id: string

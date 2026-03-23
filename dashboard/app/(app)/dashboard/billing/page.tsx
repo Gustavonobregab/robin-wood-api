@@ -3,8 +3,8 @@ import useSWR from 'swr'
 import { Button } from '@/app/components/ui/button'
 import { Badge } from '@/app/components/ui/badge'
 import { Skeleton } from '@/app/components/ui/skeleton'
-import { getCurrentUsage } from '@/app/http/usage'
-import type { ApiResponse, CurrentUsage } from '@/types'
+import { getProfile } from '@/app/http/users'
+import type { ApiResponse, UserProfile } from '@/types'
 
 function formatBytes(bytes: number): string {
   if (!bytes) return '0 B'
@@ -14,22 +14,85 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
 }
 
-function UsageRow({ label, value }: { label: string; value: string | number }) {
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+interface PipelineData {
+  label: string
+  requests: number
+  detail: string
+  data: string
+}
+
+function UsageBarChart({ pipelines, total }: { pipelines: PipelineData[]; total: number }) {
   return (
-    <div className="flex justify-between text-sm">
-      <span className="text-muted">{label}</span>
-      <span className="font-medium">{value}</span>
+    <div className="space-y-4">
+      {pipelines.map((p) => {
+        const pct = total > 0 ? (p.requests / total) * 100 : 0
+
+        return (
+          <div key={p.label} className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{p.label}</span>
+              <span className="text-sm text-muted">
+                {p.requests.toLocaleString()} req · {pct.toFixed(1)}%
+              </span>
+            </div>
+            <div className="h-4 rounded-full bg-accent-light overflow-hidden">
+              <div
+                className="h-full rounded-full bg-accent-strong transition-all"
+                style={{ width: `${Math.max(pct, 1.5)}%` }}
+              />
+            </div>
+            <div className="flex gap-3 text-xs text-muted">
+              <span>{p.detail}</span>
+              <span>·</span>
+              <span>{p.data}</span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function CreditBar({ used, limit }: { used: number; limit: number }) {
+  const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0
+  const isHigh = pct >= 80
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted">Credits used</span>
+        <span className="font-medium">
+          {used} / {limit}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-accent-light overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${isHigh ? 'bg-red-500' : 'bg-accent-strong'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   )
 }
 
 export default function BillingPage() {
-  const { data, isLoading } = useSWR<ApiResponse<CurrentUsage>>(
-    'current-usage',
-    getCurrentUsage,
+  const { data, isLoading } = useSWR<ApiResponse<UserProfile>>(
+    'user-profile',
+    getProfile,
   )
 
-  const usage = data?.data
+  const profile = data?.data
+  const plan = profile?.plan
+  const subscription = profile?.subscription
+  const usage = profile?.currentUsage
 
   return (
     <div className="h-full overflow-y-auto p-4 sm:p-6">
@@ -40,54 +103,96 @@ export default function BillingPage() {
         </div>
 
         <div className="bg-background rounded-xl border border-border shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="font-semibold">Free plan</p>
-              <p className="text-sm text-muted">$0 / month</p>
-            </div>
-            <Badge className="bg-accent-light text-foreground border-0 rounded-full">Current plan</Badge>
-          </div>
-
           {isLoading ? (
             <div className="space-y-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-2 w-full mt-2" />
             </div>
           ) : (
-            <div className="space-y-4">
-              {(usage?.audio.requests ?? 0) > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-muted uppercase tracking-wide">Audio</p>
-                  <UsageRow label="Requests" value={usage!.audio.requests} />
-                  <UsageRow label="Duration" value={`${usage!.audio.minutes.toFixed(1)} min`} />
-                  <UsageRow label="Data" value={formatBytes(usage!.audio.inputBytes)} />
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="font-semibold">{plan?.name ?? 'Free'} plan</p>
+                  {subscription && (
+                    <p className="text-sm text-muted">
+                      {formatDate(subscription.currentPeriodStart)} – {formatDate(subscription.currentPeriodEnd)}
+                    </p>
+                  )}
                 </div>
-              )}
+                <Badge className="bg-accent-light text-foreground border-0 rounded-full">
+                  Current plan
+                </Badge>
+              </div>
 
-              {(usage?.text.requests ?? 0) > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-muted uppercase tracking-wide">Text</p>
-                  <UsageRow label="Requests" value={usage!.text.requests} />
-                  <UsageRow label="Characters" value={usage!.text.characters.toLocaleString()} />
-                  <UsageRow label="Data" value={formatBytes(usage!.text.inputBytes)} />
-                </div>
+              {subscription && (
+                <CreditBar
+                  used={subscription.credits.used}
+                  limit={subscription.credits.limit}
+                />
               )}
-
-              {(usage?.audio.requests ?? 0) === 0 && (usage?.text.requests ?? 0) === 0 && (
-                <p className="text-sm text-muted">No usage this month.</p>
-              )}
-            </div>
+            </>
           )}
         </div>
 
-        <div className="bg-background rounded-xl border border-border shadow-sm p-6">
-          <h3 className="font-medium mb-1">Upgrade to Pro</h3>
-          <p className="text-sm text-muted mb-4">Priority processing and higher limits. $19/mo.</p>
-          <Button disabled className="rounded-full bg-accent-strong text-foreground opacity-50 cursor-not-allowed">
-            Upgrade: coming soon
-          </Button>
-        </div>
+        {!isLoading && usage && (
+          <div className="bg-background rounded-xl border border-border shadow-sm p-6">
+            <h3 className="font-medium mb-4">Usage this cycle</h3>
+            {(() => {
+              const pipelines: PipelineData[] = [
+                usage.audio.requests > 0 && {
+                  label: 'Audio',
+                  requests: usage.audio.requests,
+                  detail: `${usage.audio.minutes.toFixed(1)} min`,
+                  data: formatBytes(usage.audio.inputBytes),
+                },
+                usage.text.requests > 0 && {
+                  label: 'Text',
+                  requests: usage.text.requests,
+                  detail: `${usage.text.characters.toLocaleString()} chars`,
+                  data: formatBytes(usage.text.inputBytes),
+                },
+                usage.image.requests > 0 && {
+                  label: 'Image',
+                  requests: usage.image.requests,
+                  detail: `${usage.image.megapixels.toFixed(1)} MP`,
+                  data: formatBytes(usage.image.inputBytes),
+                },
+                usage.video.requests > 0 && {
+                  label: 'Video',
+                  requests: usage.video.requests,
+                  detail: `${usage.video.minutes.toFixed(1)} min`,
+                  data: formatBytes(usage.video.inputBytes),
+                },
+              ].filter(Boolean) as PipelineData[]
+
+              if (pipelines.length === 0) {
+                return <p className="text-sm text-muted">No usage this cycle.</p>
+              }
+
+              const total = pipelines.reduce((sum, p) => sum + p.requests, 0)
+
+              return (
+                <>
+                  <p className="text-2xl font-semibold mb-4">
+                    {total.toLocaleString()} <span className="text-sm font-normal text-muted">total requests</span>
+                  </p>
+                  <UsageBarChart pipelines={pipelines} total={total} />
+                </>
+              )
+            })()}
+          </div>
+        )}
+
+        {!isLoading && plan?.slug === 'free' && (
+          <div className="bg-background rounded-xl border border-border shadow-sm p-6">
+            <h3 className="font-medium mb-1">Upgrade to Pro</h3>
+            <p className="text-sm text-muted mb-4">Priority processing and higher limits.</p>
+            <Button disabled className="rounded-full bg-accent-strong text-foreground opacity-50 cursor-not-allowed">
+              Upgrade: coming soon
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

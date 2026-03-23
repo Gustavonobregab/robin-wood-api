@@ -3,7 +3,7 @@ import Link from 'next/link'
 import useSWR from 'swr'
 import { useSession } from '@/app/lib/auth-client'
 import { getUsageAnalytics } from '@/app/http/usage'
-import { FileText, Mic, Key, BookOpen, CreditCard } from 'lucide-react'
+import { FileText, Mic, CreditCard } from 'lucide-react'
 import type { ApiResponse, UsageAnalytics, UsageEvent } from '@/types'
 
 function getGreeting() {
@@ -102,22 +102,10 @@ const TOOLS = [
 
 const QUICK_STARTS = [
   {
-    label: 'API Keys',
-    description: 'Create and manage your API keys',
-    href: '/dashboard/keys',
-    icon: Key,
-  },
-  {
     label: 'Billing',
     description: 'Plans, invoices, and payment method',
     href: '/dashboard/billing',
     icon: CreditCard,
-  },
-  {
-    label: 'API Reference',
-    description: 'Browse the full API documentation',
-    href: '#',
-    icon: BookOpen,
   },
 ]
 
