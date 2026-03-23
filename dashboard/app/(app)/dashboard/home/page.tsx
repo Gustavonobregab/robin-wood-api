@@ -25,12 +25,8 @@ function TextVisual() {
         ))}
       </div>
 
-      {/* Arrow */}
-      <div className="flex flex-col gap-0.5">
-        {[1, 1, 1].map((_, i) => (
-          <div key={i} className="w-4 h-0.5 rounded-full bg-accent-strong/60" />
-        ))}
-      </div>
+      {/* Divider between before / after */}
+      <div className="h-12 w-px shrink-0 rounded-full bg-accent-strong/50" aria-hidden />
 
       {/* "After" document: shorter lines */}
       <div className="bg-background rounded-lg shadow-sm px-3 py-2.5 space-y-1.5 w-16">

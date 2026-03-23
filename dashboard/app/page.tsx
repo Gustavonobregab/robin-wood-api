@@ -17,7 +17,7 @@ function SectionDivider() {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col selection:bg-accent-strong/40 selection:text-foreground">
       <Navbar />
       <main className="flex-1 pt-16">
         <div className="relative max-w-6xl mx-auto">

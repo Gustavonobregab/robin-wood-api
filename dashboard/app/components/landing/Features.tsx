@@ -87,7 +87,6 @@ export function Features() {
                   <span className="text-muted">Input</span>
                   <span className="font-mono font-medium">2,400 tokens</span>
                 </div>
-                <span className="text-muted">→</span>
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-muted">Output</span>
                   <span className="font-mono font-medium text-accent-strong">1,392 tokens</span>

@@ -65,7 +65,7 @@ export function ToolHistoryPanel({ pipelineType, emptyIcon, emptyLabel }: ToolHi
             <span className="text-xs text-muted">{formatDate(event.timestamp)}</span>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted">
-            <span>{formatBytes(event.inputBytes)} → {formatBytes(event.outputBytes)}</span>
+            <span>{formatBytes(event.inputBytes)} to {formatBytes(event.outputBytes)}</span>
             <span>{event.processingMs}ms</span>
             {event.inputBytes > 0 && (
               <span className="text-accent-strong font-medium">
