@@ -2,6 +2,8 @@ import { randomBytes } from 'crypto';
 import { ApiKeyModel } from './keys.model';
 import type { ApiKey } from './keys.types';
 import { ApiError } from '../../utils/api-error';
+import { UserModel } from '../users/users.model';
+import { PlanModel } from '../plans/plans.model';
 
 export class KeysService {
   private generateApiKey(): string {
@@ -13,8 +15,21 @@ export class KeysService {
   async createKey(userId: string, name: string): Promise<ApiKey> {
     const existingKeys = await ApiKeyModel.countDocuments({ userId, status: 'active' });
 
-    if (existingKeys >= 5) {
-      throw new ApiError('KEY_LIMIT_REACHED', 'Maximum of 5 active API keys allowed', 400);
+    // Get max keys from user's plan, fallback to 5
+    let maxKeys = 5;
+    const user = await UserModel.findOne({
+      $or: [{ oderId: userId }, { _id: userId }],
+    }).lean();
+
+    if (user?.plan) {
+      const plan = await PlanModel.findById(user.plan).lean();
+      if (plan) {
+        maxKeys = plan.features.maxApiKeys;
+      }
+    }
+
+    if (existingKeys >= maxKeys) {
+      throw new ApiError('KEY_LIMIT_REACHED', `Maximum of ${maxKeys} active API keys allowed on your plan`, 400);
     }
 
     const key = this.generateApiKey();
