@@ -1,8 +1,6 @@
 'use client'
 import { useState } from 'react'
 import { cn } from '@/app/lib/utils'
-import { Button } from '@/app/components/ui/button'
-import Link from 'next/link'
 
 export function Showcase() {
   const [activeTab, setActiveTab] = useState<'stories' | 'usecases'>('stories')
@@ -62,7 +60,7 @@ export function Showcase() {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col gap-4 mt-6 bg-background rounded-2xl border border-border px-4 sm:px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 bg-background rounded-2xl border border-border px-4 sm:px-6 py-4">
           <div className="flex items-center gap-4">
             <div className="flex -space-x-2 shrink-0">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -77,9 +75,6 @@ export function Showcase() {
               <p className="text-xs text-muted truncate">Join thousands of developers compressing smarter</p>
             </div>
           </div>
-          <Button variant="outline" className="rounded-full self-start sm:self-auto shrink-0" asChild>
-            <Link href="/sign-up">Get started</Link>
-          </Button>
         </div>
       </div>
     </section>

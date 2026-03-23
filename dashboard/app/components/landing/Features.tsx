@@ -1,6 +1,4 @@
-import Link from 'next/link'
 import { FileText, Music, Image as ImageIcon, Zap } from 'lucide-react'
-import { Button } from '@/app/components/ui/button'
 
 export function Features() {
   return (
@@ -17,12 +15,6 @@ export function Features() {
           <p className="text-base text-muted leading-relaxed max-w-sm md:pt-10">
             No AI, no black box. Pure algorithms that shrink your payloads before they hit the API. Fewer tokens sent, more money saved every month.
           </p>
-        </div>
-
-        <div className="mb-8 md:mb-12">
-          <Button className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light" asChild>
-            <Link href="/sign-up">Get started</Link>
-          </Button>
         </div>
 
         {/* Two large feature cards — stack on mobile, 3/2 split on lg */}

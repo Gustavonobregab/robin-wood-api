@@ -24,13 +24,9 @@ export function Hero() {
           </p>
         </div>
 
-        {/* CTA buttons */}
-        <div className="flex items-center gap-3 mb-8 md:mb-16">
+        <div className="mb-8 md:mb-16">
           <Button className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light px-6" asChild>
-            <Link href="/sign-up">Sign up</Link>
-          </Button>
-          <Button variant="outline" className="rounded-full px-6" asChild>
-            <Link href="#pricing">View pricing</Link>
+            <Link href="/sign-in">Compress</Link>
           </Button>
         </div>
 
@@ -151,7 +147,7 @@ export function Hero() {
           </div>
 
           {/* Bottom bar */}
-          <div className="flex flex-col gap-3 px-4 sm:px-6 pb-4 sm:pb-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 px-4 sm:px-6 pb-4 sm:pb-5">
             <div className="flex items-center gap-1 bg-background rounded-full border border-border p-1 self-start">
               {['Text', 'Audio', 'Image'].map((label) => (
                 <button
@@ -175,9 +171,6 @@ export function Hero() {
                 </button>
               ))}
             </div>
-            <Button className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light self-start sm:self-auto" asChild>
-              <Link href="/sign-up">Try it free</Link>
-            </Button>
           </div>
         </div>
       </div>

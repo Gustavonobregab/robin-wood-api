@@ -8,7 +8,7 @@ const plans = [
     description: 'For the curious thief',
     features: ['10,000 tokens/month', '1 API key', 'Text + Audio compression', 'Community support'],
     cta: 'Start for free',
-    href: '/sign-up',
+    href: '/sign-in',
     highlight: false,
   },
   {
@@ -17,7 +17,7 @@ const plans = [
     description: 'For teams serious about saving',
     features: ['500,000 tokens/month', '5 API keys', 'Text + Audio + Image', 'Priority processing', 'Webhook notifications'],
     cta: 'Get Pro',
-    href: '/sign-up',
+    href: '/sign-in',
     highlight: true,
   },
   {
@@ -26,7 +26,7 @@ const plans = [
     description: 'For large-scale operations',
     features: ['Unlimited tokens', 'Unlimited API keys', 'Dedicated support', 'SLA & uptime guarantee', 'Custom integrations'],
     cta: 'Contact us',
-    href: '/sign-up',
+    href: '/sign-in',
     highlight: false,
   },
 ]

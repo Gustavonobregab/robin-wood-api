@@ -18,13 +18,9 @@ export function Navbar() {
           <Link href="#" className="text-muted hover:text-foreground transition-colors">Docs</Link>
         </div>
 
-        {/* CTA */}
-        <div className="flex items-center gap-1 ml-auto">
-          <Button variant="outline" size="sm" className="rounded-full hidden md:inline-flex" asChild>
-            <Link href="/sign-in">Sign in</Link>
-          </Button>
+        <div className="ml-auto">
           <Button size="sm" className="rounded-full bg-accent-strong text-foreground hover:bg-accent-light" asChild>
-            <Link href="/sign-up">Get started</Link>
+            <Link href="/sign-in">Compress</Link>
           </Button>
         </div>
       </div>
